@@ -177,10 +177,10 @@ public:
   {
     Mat6 out;
     Mat3 R = q_.R();
-    out.block<3,3>(0,0) = R;
-    out.block<3,3>(0,3) = Quat<T>::skew(t_)*R;
-    out.block<3,3>(3,3) = R;
-    out.block<3,3>(3,0) = Mat3::Zero();
+    out.block(0,0,3,3) = R;
+    out.block(0,3,3,3) = Quat<T>::skew(t_)*R;
+    out.block(3,3,3,3) = R;
+    out.block(3,0,3,3) = Mat3::Zero();
     return out;
   }
 

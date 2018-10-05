@@ -305,6 +305,12 @@ public:
     return v - w() * t + t.cross(bar());
   }
 
+  Vec3 rota(const Matrix<T,3,1>& v) const
+  {
+    Vec3 t = 2.0 * v.cross(bar());
+    return v - w() * t + t.cross(bar());
+  }
+
   // The same as R * v but faster
   Vec3 rotp(const Vec3& v) const
   {
@@ -314,7 +320,7 @@ public:
 
   Quat& invert()
   {
-    arr_.block<3,1>(1,0) *= (T)-1.0;
+    arr_.block(1,0,3,1) *= (T)-1.0;
   }
 
   Quat inverse() const
