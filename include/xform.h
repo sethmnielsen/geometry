@@ -5,8 +5,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "lie/quat.h"
-#include "lie/math_helper.h"
+#include "quat.h"
+#include "support.h"
 
 using namespace Eigen;
 using namespace quat;
