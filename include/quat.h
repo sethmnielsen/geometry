@@ -23,10 +23,6 @@ public:
     arr_(buf_)
   {}
 
-//  Quat(const Vec4& arr) :
-//    arr_(const_cast<Vec4>(arr))
-//  {}
-
   Quat(const Ref<const Vec4> arr) :
     arr_(const_cast<T*>(arr.data()))
   {}
@@ -37,7 +33,9 @@ public:
     memcpy(buf_, q.arr_.data(), 4*sizeof(T));
   }
 
-  Quat(const T* data) : arr_(const_cast<T*>(data)) {}
+  Quat(const T* data) :
+    arr_(const_cast<T*>(data))
+  {}
 
   inline T* data() { return arr_.data(); }
 
@@ -239,17 +237,17 @@ public:
         atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
     return out;
   }
-  
+
   T roll() const
   {
     return atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y()));
   }
-  
+
   T pitch() const
   {
     return asin(2.0*(w()*y() - z()*x()));
   }
-  
+
   T yaw() const
   {
     return atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
