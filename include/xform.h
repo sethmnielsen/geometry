@@ -82,14 +82,14 @@ public:
     t_ = t;
   }
 
-  Xform(const Mat4& X) :
-    arr_(buf_),
-    t_(arr_.data()),
-    q_(arr_.data() + 3)
-  {
-    q_ = Quat<T>::from_R(X.block<3,3>(0,0));
-    t_ = X.block<3,1>(0, 3);
-  }
+//  Xform(const Mat4& X) :
+//    arr_(buf_),
+//    t_(arr_.data()),
+//    q_(arr_.data() + 3)
+//  {
+//    q_ = Quat<T>::from_R(X.block<3,3>(0,0));
+//    t_ = X.block<3,1>(0, 3);
+//  }
 
   inline Map<Vec3>& t() { return t_;}
   inline Quat<T>& q() { return q_;}
@@ -216,8 +216,9 @@ public:
   template <typename T2>
   Xform otimes(const Xform<T2>& X2) const
   {
-    Xform<T> X;
-    X.t_ = t_ + q_.rota(X2.t_);
+    Xform X;
+    Vec3 t = (T)2.0*X2.t_.cross(q_.bar());
+    X.t_ = t_+ X2.t_ - q_.w()* t + t.cross(q_.bar());
     X.q_ = q_ * X2.q_;
     return X;
   }
