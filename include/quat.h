@@ -19,7 +19,7 @@ private:
 
 public:
   Quat() :
-    arr_(buf_)
+    arr_(buf_.data())
   {}
 
   Quat(const Vec4& arr) :
@@ -31,7 +31,7 @@ public:
   {}
 
   Quat(const Quat& q)
-    : arr_(buf_),
+    : arr_(buf_.data()),
       buf_{q.arr_}
   {}
 
@@ -39,7 +39,7 @@ public:
 
   inline T* data() { return arr_.data(); }
 
-  Ref<Vec4> arr_;
+  Map<Vec4> arr_;
   Vec4 buf_;
 
   inline T w() const { return arr_(0); }
@@ -238,17 +238,17 @@ public:
         atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
     return out;
   }
-  
+
   T roll() const
   {
     return atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y()));
   }
-  
+
   T pitch() const
   {
     return asin(2.0*(w()*y() - z()*x()));
   }
-  
+
   T yaw() const
   {
     return atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));

@@ -63,7 +63,7 @@ inline Eigen::Matrix3d skew(const Eigen::Vector3d v)
 }
 
 template <typename Derived>
-void setNormalRandom(MatrixBase<Derived>& M, std::normal_distribution<double>& N, std::default_random_engine& g)
+void setNormalRandom(Eigen::MatrixBase<Derived>& M, std::normal_distribution<double>& N, std::default_random_engine& g)
 {
   for (int i = 0; i < M.rows(); i++)
   {

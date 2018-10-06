@@ -5,8 +5,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "quat.h"
 #include "support.h"
+#include "quat.h"
 
 using namespace Eigen;
 using namespace quat;
@@ -32,42 +32,71 @@ private:
   typedef Matrix<T, 6, 6> Mat6;
 
 public:
-  Vec3 t_;
+  Vec7 buf_;
+  Ref<Vec7> arr_;
+  Map<Vec3> t_;
   Quat<T> q_;
 
-  Xform(){}
+  Xform() :
+    arr_(buf_),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
+  {}
 
-  Xform(const T* data)
-  {
-    t_ = Map<const Vec3>(data);
-    q_ = Map<const Vec4>(data + 3);
-  }
+  Xform(const Vec7& arr) :
+    arr_(const_cast<Vec7>(arr)),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
+  {}
 
-  Xform(const Vec7& arr)
-    : q_(arr.block(3,0,4,1))
-  {
-    t_ = arr.block(0,0,3,1);
-  }
+  Xform(Ref<Vec7> arr) :
+    arr_(arr.data()),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
+  {}
 
-  Xform(const Vec3& t, const Quat<T>& q)
+  Xform(const Xform& X) :
+    arr_(buf_),
+    buf_(X.arr_),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
+  {}
+
+  Xform(const T* data) :
+    arr_(const_cast<T*>(data)),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
+  {}
+
+  Xform(const Vec3& t, const Quat<T>& q) :
+    arr_(buf_),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
   {
+    // copies arguments into contiguous (owned) memory
     t_ = t;
     q_ = q;
   }
 
-  Xform(const Vec3& t, const Mat3& R)
+  Xform(const Vec3& t, const Mat3& R) :
+    arr_(buf_),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
   {
     q_ = Quat<T>::from_R(R);
     t_ = t;
   }
 
-  Xform(const Mat4& X)
+  Xform(const Mat4& X) :
+    arr_(buf_),
+    t_(arr_.data()),
+    q_(arr_.data() + 3)
   {
     q_ = Quat<T>::from_R(X.block<3,3>(0,0));
     t_ = X.block<3,1>(0, 3);
   }
 
-  inline Vec3& t() { return t_;}
+  inline Map<Vec3>& t() { return t_;}
   inline Quat<T>& q() { return q_;}
   inline void setq(const Quat<T>& q) {q_ = q;}
   inline void sett(const Vec3&t) {t_ = t;}
@@ -177,10 +206,10 @@ public:
   {
     Mat6 out;
     Mat3 R = q_.R();
-    out.block(0,0,3,3) = R;
-    out.block(0,3,3,3) = Quat<T>::skew(t_)*R;
-    out.block(3,3,3,3) = R;
-    out.block(3,0,3,3) = Mat3::Zero();
+    out.block<3,3>(0,0) = R;
+    out.block<3,3>(0,3) = Quat<T>::skew(t_)*R;
+    out.block<3,3>(3,3) = R;
+    out.block<3,3>(3,0) = Mat3::Zero();
     return out;
   }
 
@@ -196,7 +225,6 @@ public:
     X.t_ = t_ + q_.rota(X2.t_);
     X.q_ = q_ * X2.q_;
     return X;
-//    return Xform(t_ + q_.rota(X2.t_), q_ * X2.q_);
   }
 
   Vec3 transforma(const Vec3& v) const
