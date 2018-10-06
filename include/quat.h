@@ -16,31 +16,32 @@ class Quat
 private:
   typedef Matrix<T,4,1> Vec4;
   typedef Matrix<T,3,1> Vec3;
+  T buf_[4];
 
 public:
   Quat() :
     arr_(buf_)
   {}
 
-  Quat(const Vec4& arr) :
-    arr_(const_cast<Vec4>(arr))
-  {}
+//  Quat(const Vec4& arr) :
+//    arr_(const_cast<Vec4>(arr))
+//  {}
 
-  Quat(Ref<Vec4> arr) :
-    arr_(arr.data())
+  Quat(const Ref<const Vec4> arr) :
+    arr_(const_cast<T*>(arr.data()))
   {}
 
   Quat(const Quat& q)
-    : arr_(buf_),
-      buf_{q.arr_}
-  {}
+    : arr_(buf_)
+  {
+    memcpy(buf_, q.arr_.data(), 4*sizeof(T));
+  }
 
   Quat(const T* data) : arr_(const_cast<T*>(data)) {}
 
   inline T* data() { return arr_.data(); }
 
-  Ref<Vec4> arr_;
-  Vec4 buf_;
+  Map<Vec4> arr_;
 
   inline T w() const { return arr_(0); }
   inline T x() const { return arr_(1); }
@@ -166,10 +167,10 @@ public:
     T alpha_2 = angle/2.0;
     T sin_a2 = sin(alpha_2);
     Quat out;
-    out.buf_(0) = cos(alpha_2);
-    out.buf_(1) = axis(0)*sin_a2;
-    out.buf_(2) = axis(1)*sin_a2;
-    out.buf_(3) = axis(2)*sin_a2;
+    out.arr_(0) = cos(alpha_2);
+    out.arr_(1) = axis(0)*sin_a2;
+    out.arr_(2) = axis(1)*sin_a2;
+    out.arr_(3) = axis(2)*sin_a2;
     out.arr_ /= out.arr_.norm();
     return out;
   }
@@ -225,8 +226,8 @@ public:
   static Quat Random()
   {
     Quat q_out;
-    q_out.buf_.setRandom();
-    q_out.buf_ /= q_out.buf_.norm();
+    q_out.arr_.setRandom();
+    q_out.arr_ /= q_out.arr_.norm();
     return q_out;
   }
 
