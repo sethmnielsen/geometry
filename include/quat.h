@@ -18,17 +18,29 @@ private:
   typedef Matrix<T,3,1> Vec3;
 
 public:
-  Quat() {}
+  Quat() :
+    arr_(buf_)
+  {}
 
-  Quat(const Vec4& arr) : arr_(arr.data()) {}
-  Quat(const T* data)
-  {
-      arr_ = Map<const Vec4>(data);
-  }
+  Quat(const Vec4& arr) :
+    arr_(const_cast<Vec4>(arr))
+  {}
+
+  Quat(Ref<Vec4> arr) :
+    arr_(arr.data())
+  {}
+
+  Quat(const Quat& q)
+    : arr_(buf_),
+      buf_{q.arr_}
+  {}
+
+  Quat(const T* data) : arr_(const_cast<T*>(data)) {}
 
   inline T* data() { return arr_.data(); }
 
-  Vec4 arr_;
+  Ref<Vec4> arr_;
+  Vec4 buf_;
 
   inline T w() const { return arr_(0); }
   inline T x() const { return arr_(1); }
@@ -38,17 +50,18 @@ public:
   inline void setX(T x) { arr_(1) = x; }
   inline void setY(T y) { arr_(2) = y; }
   inline void setZ(T z) { arr_(3) = z; }
-  inline const Vec4& elements() const { return arr_;}
+  inline const Vec4 elements() const { return arr_;}
+  inline const T* data() const { return arr_.data();}
 
 
   template<typename T2>
   Quat operator* (const Quat<T2>& q) const { return otimes(q); }
   Quat& operator *= (const Quat& q)
   {
-    arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
-             w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
-             w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
-             w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+    arr_ << w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
+            w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+            w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+            w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
   }
 
   Quat& operator= (const Quat& q) { arr_ = q.elements(); }
@@ -76,18 +89,18 @@ public:
   {
     T norm_v = v.norm();
 
-    Vec4 q_arr;
+    Quat q;
     if (norm_v > 1e-4)
     {
       T v_scale = sin(norm_v/2.0)/norm_v;
-      q_arr << cos(norm_v/2.0), v_scale*v(0), v_scale*v(1), v_scale*v(2);
+      q.arr_ << cos(norm_v/2.0), v_scale*v(0), v_scale*v(1), v_scale*v(2);
     }
     else
     {
-      q_arr << (T)1.0, v(0)/2.0, v(1)/2.0, v(2)/2.0;
-      q_arr /= q_arr.norm();
+      q.arr_ << (T)1.0, v(0)/2.0, v(1)/2.0, v(2)/2.0;
+      q.arr_ /= q.arr_.norm();
     }
-    return Quat(q_arr);
+    return q;
   }
 
   static Vec3 log(const Quat& q)
@@ -110,52 +123,55 @@ public:
 
   static Quat from_R(const Matrix<T,3,3>& m)
   {
-    Vec4 q;
+    Quat q;
     T tr = m.trace();
 
     if (tr > 0)
     {
       T S = sqrt(tr+1.0) * 2.;
-      q << 0.25 * S,
-           (m(1,2) - m(2,1)) / S,
-           (m(2,0) - m(0,2)) / S,
-           (m(0,1) - m(1,0)) / S;
+      q.arr_ << 0.25 * S,
+               (m(1,2) - m(2,1)) / S,
+               (m(2,0) - m(0,2)) / S,
+               (m(0,1) - m(1,0)) / S;
     }
     else if ((m(0,0) > m(1,1)) && (m(0,0) > m(2,2)))
     {
       T S = sqrt(1.0 + m(0,0) - m(1,1) - m(2,2)) * 2.;
-      q << (m(1,2) - m(2,1)) / S,
-           0.25 * S,
-           (m(1,0) + m(0,1)) / S,
-           (m(2,0) + m(0,2)) / S;
+      q.arr_ << (m(1,2) - m(2,1)) / S,
+                0.25 * S,
+                (m(1,0) + m(0,1)) / S,
+                (m(2,0) + m(0,2)) / S;
     }
     else if (m(1,1) > m(2,2))
     {
       T S = sqrt(1.0 + m(1,1) - m(0,0) - m(2,2)) * 2.;
-      q << (m(2,0) - m(0,2)) / S,
-           (m(1,0) + m(0,1)) / S,
-           0.25 * S,
-           (m(2,1) + m(1,2)) / S;
+      q.arr_ << (m(2,0) - m(0,2)) / S,
+                (m(1,0) + m(0,1)) / S,
+                0.25 * S,
+                (m(2,1) + m(1,2)) / S;
     }
     else
     {
       T S = sqrt(1.0 + m(2,2) - m(0,0) - m(1,1)) * 2.;
-      q << (m(0,1) - m(1,0)) / S,
-           (m(2,0) + m(0,2)) / S,
-           (m(2,1) + m(1,2)) / S,
-           0.25 * S;
+      q.arr_ << (m(0,1) - m(1,0)) / S,
+                (m(2,0) + m(0,2)) / S,
+                (m(2,1) + m(1,2)) / S,
+                0.25 * S;
     }
-    return Quat(q);
+    return q;
   }
 
   static Quat from_axis_angle(const Vec3& axis, const T angle)
   {
     T alpha_2 = angle/2.0;
     T sin_a2 = sin(alpha_2);
-    Vec4 arr;
-    arr << cos(alpha_2), axis(0)*sin_a2, axis(1)*sin_a2, axis(2)*sin_a2;
-    arr /= arr.norm();
-    return Quat(arr);
+    Quat out;
+    out.buf_(0) = cos(alpha_2);
+    out.buf_(1) = axis(0)*sin_a2;
+    out.buf_(2) = axis(1)*sin_a2;
+    out.buf_(3) = axis(2)*sin_a2;
+    out.arr_ /= out.arr_.norm();
+    return out;
   }
 
   static Quat from_euler(const T roll, const T pitch, const T yaw)
@@ -167,51 +183,51 @@ public:
     T st = sin(pitch/2.0);
     T ss = sin(yaw/2.0);
 
-    Vec4 arr;
-    arr << cp*ct*cs + sp*st*ss,
-           sp*ct*cs - cp*st*ss,
-           cp*st*cs + sp*ct*ss,
-           cp*ct*ss - sp*st*cs;
-    return Quat(arr);
+    Quat q;
+    q.arr_ << cp*ct*cs + sp*st*ss,
+              sp*ct*cs - cp*st*ss,
+              cp*st*cs + sp*ct*ss,
+              cp*ct*ss - sp*st*cs;
+    return q;
   }
 
   static Quat from_two_unit_vectors(const Vec3& u, const Vec3& v)
   {
-    Vec4 q_arr;
+    Quat q_out;
 
     T d = u.dot(v);
     if (d < 0.99999999 && d > -0.99999999)
     {
       T invs = 1.0/sqrt((2.0*(1.0+d)));
       Vec3 xyz = u.cross(v*invs);
-      q_arr(0) = 0.5/invs;
-      q_arr.block(1,0,3,1)=xyz;
-      q_arr /= q_arr.norm();
+      q_out.arr_(0) = 0.5/invs;
+      q_out.arr_.block(1,0,3,1)=xyz;
+      q_out.arr_ /= q_out.arr_.norm();
     }
     else if (d < -0.99999999)
     {
-      q_arr << 0, 1, 0, 0; // There are an infinite number of solutions here, choose one
+      q_out.arr_ << 0, 1, 0, 0; // There are an infinite number of solutions here, choose one
     }
     else
     {
-      q_arr << 1, 0, 0, 0;
+      q_out.arr_ << 1, 0, 0, 0;
     }
-    return Quat(q_arr);
+    return q_out;
   }
 
   static Quat Identity()
   {
-    Vec4 q_arr;
-    q_arr << 1.0, 0, 0, 0;
-    return Quat(q_arr);
+    Quat q;
+    q.arr_ << 1.0, 0, 0, 0;
+    return q;
   }
 
   static Quat Random()
   {
-    Vec4 q_arr;
-    q_arr.setRandom();
-    q_arr /= q_arr.norm();
-    return Quat(q_arr);
+    Quat q_out;
+    q_out.buf_.setRandom();
+    q_out.buf_ /= q_out.buf_.norm();
+    return q_out;
   }
 
   Vec3 euler() const
@@ -263,8 +279,9 @@ public:
 
   Quat copy() const
   {
-    Vec4 tmp = arr_;
-    return Quat(tmp);
+    Quat tmp;
+    tmp.arr_ = arr_;
+    return tmp;
   }
 
   void normalize()
@@ -325,22 +342,23 @@ public:
 
   Quat inverse() const
   {
-    Vec4 tmp = arr_;
-    tmp(1) *= (T)-1.0;
-    tmp(2) *= (T)-1.0;
-    tmp(3) *= (T)-1.0;
-    return Quat(tmp);
+    Quat tmp;
+    tmp.arr_(0) = arr_(0);
+    tmp.arr_(1) = -arr_(1);
+    tmp.arr_(2) = -arr_(2);
+    tmp.arr_(3) = -arr_(3);
+    return tmp;
   }
 
   template <typename T2>
   Quat otimes(const Quat<T2>& q) const
   {
-    Vec4 new_arr;
-    new_arr <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
-                w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
-                w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
-                w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
-    return Quat(new_arr);
+    Quat qout;
+    qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
+                  w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+                  w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+                  w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+    return qout;
   }
 
   Quat boxplus(const Vec3& delta) const
