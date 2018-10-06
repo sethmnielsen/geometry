@@ -30,10 +30,10 @@ private:
   typedef Matrix<T, 3, 3> Mat3;
   typedef Matrix<T, 4, 4> Mat4;
   typedef Matrix<T, 6, 6> Mat6;
+  T buf_[7];
 
 public:
-  Vec7 buf_;
-  Ref<Vec7> arr_;
+  Map<Vec7> arr_;
   Map<Vec3> t_;
   Quat<T> q_;
 
@@ -43,24 +43,19 @@ public:
     q_(arr_.data() + 3)
   {}
 
-  Xform(const Vec7& arr) :
-    arr_(const_cast<Vec7>(arr)),
-    t_(arr_.data()),
-    q_(arr_.data() + 3)
-  {}
-
-  Xform(Ref<Vec7> arr) :
-    arr_(arr.data()),
+  Xform(const Ref<const Vec7> arr) :
+    arr_(const_cast<T*>(arr.data())),
     t_(arr_.data()),
     q_(arr_.data() + 3)
   {}
 
   Xform(const Xform& X) :
     arr_(buf_),
-    buf_(X.arr_),
     t_(arr_.data()),
     q_(arr_.data() + 3)
-  {}
+  {
+    arr_ = X.arr_;
+  }
 
   Xform(const T* data) :
     arr_(const_cast<T*>(data)),

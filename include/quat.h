@@ -30,7 +30,7 @@ public:
   Quat(const Quat& q)
     : arr_(buf_)
   {
-    memcpy(buf_, q.arr_.data(), 4*sizeof(T));
+    arr_ = q.arr_;
   }
 
   Quat(const T* data) :
