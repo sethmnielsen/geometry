@@ -11,7 +11,11 @@ using namespace xform;
 using namespace Eigen;
 using namespace std;
 
+#ifdef NDEBUG
 #define NUM_ITERS 1000
+#else
+#define NUM_ITERS 10
+#endif
 
 #define MATRIX_CLOSE(m1, m2, tol) {\
   for (int row = 0; row < (m1).rows(); row++ ) \

@@ -182,7 +182,7 @@ public:
     Vec3 omega = Quat<T>::log(X.q_);
     u.block(3,0,3,1) = omega;
     T th = omega.norm();
-    if (th > 1e-16)
+    if (th > 1e-8)
     {
       Mat3 wx = Quat<T>::skew(omega);
       T A = sin(th)/th;
