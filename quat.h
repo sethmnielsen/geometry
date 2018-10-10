@@ -328,10 +328,17 @@ public:
   }
 
   // The same as R * v but faster
-  Vec3 rotp(const Vec3& v) const
+  template<typename T2>
+  Vec3 rotp(const Matrix<T2, 3, 1>& v) const
   {
     Vec3 t = 2.0 * v.cross(bar());
     return v + w() * t + t.cross(bar());
+  }
+
+  Vec3 rotp(const Vec3& v) const
+  {
+      Vec3 t = 2.0 * v.cross(bar());
+      return v + w() * t + t.cross(bar());
   }
 
   Quat& invert()
@@ -360,7 +367,8 @@ public:
     return qout;
   }
 
-  Quat boxplus(const Vec3& delta) const
+  template<typename T2>
+  Quat<T2> boxplus(const Matrix<T2, 3, 1>& delta) const
   {
     return otimes(exp(delta));
   }
