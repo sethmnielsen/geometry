@@ -19,6 +19,7 @@ private:
   T buf_[4];
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Quat() :
     arr_(buf_)
   {}
@@ -104,7 +105,7 @@ public:
 
   static Vec3 log(const Quat& q)
   {
-    Vec3 v = q.arr_.block(1,0,3,1);
+    Vec3 v = q.arr_.template block<3,1>(1,0);
     T w = q.w();
     T norm_v = v.norm();
 
@@ -200,7 +201,7 @@ public:
       T invs = 1.0/sqrt((2.0*(1.0+d)));
       Vec3 xyz = u.cross(v*invs);
       q_out.arr_(0) = 0.5/invs;
-      q_out.arr_.block(1,0,3,1)=xyz;
+      q_out.arr_.template block<3,1>(1,0)=xyz;
       q_out.arr_ /= q_out.arr_.norm();
     }
     else if (d < -0.99999999)
@@ -255,7 +256,7 @@ public:
 
   Vec3 bar() const
   {
-    return arr_.block(1,0,3,1);
+    return arr_.template block<3,1>(1,0);
   }
 
   Matrix<T,3,3> R() const
@@ -343,7 +344,7 @@ public:
 
   Quat& invert()
   {
-    arr_.block(1,0,3,1) *= (T)-1.0;
+    arr_.template block<3,1>(1,0) *= (T)-1.0;
   }
 
   Quat inverse() const

@@ -33,6 +33,7 @@ private:
   T buf_[7];
 
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Map<Vec7> arr_;
   Map<Vec3> t_;
   Quat<T> q_;
@@ -104,8 +105,8 @@ public:
   }
   Xform& operator=(const Xform& X) {t_ = X.t_; q_ = X.q_;}
   Xform& operator=(const Vec7& v) {
-    t_ = v.segment<3>(0);
-    q_ = Quat<T>(v.segment<4>(3));
+    t_ = v.template segment<3>(0);
+    q_ = Quat<T>(v.template segment<4>(3));
   }
 
   Xform operator+ (const Vec6& v)
@@ -127,8 +128,8 @@ public:
   Vec7 elements() const
   {
     Vec7 out;
-    out.block(0,0,3,1) = t_;
-    out.block(3,0,4,1) = q_.arr_;
+    out.template block<3,1>(0,0) = t_;
+    out.template block<4,1>(3,0) = q_.arr_;
     return out;
   }
 
@@ -159,8 +160,8 @@ public:
 
   static Xform exp(const Vec6& v)
   {
-    Vec3 u = v.block(0,0,3,1);
-    Vec3 omega = v.block(3,0,3,1);
+    Vec3 u = v.template block<3,1>(0,0);
+    Vec3 omega = v.template block<3,1>(3,0);
     T th = omega.norm();
     Quat<T> q_exp = Quat<T>::exp(omega);
     if (th > 1e-4)
@@ -180,7 +181,7 @@ public:
   {
     Vec6 u;
     Vec3 omega = Quat<T>::log(X.q_);
-    u.block(3,0,3,1) = omega;
+    u.template block<3,1>(3,0) = omega;
     T th = omega.norm();
     if (th > 1e-8)
     {
@@ -188,11 +189,11 @@ public:
       T A = sin(th)/th;
       T B = ((T)1. - cos(th)) / (th * th);
       Mat3 V = I_3x3 - (1./2.)*wx + (1./(th*th)) * (1.-(A/(2.*B)))*(wx* wx);
-      u.block(0,0,3,1) = V.transpose() * X.t_;
+      u.template block<3,1>(0,0) = V.transpose() * X.t_;
     }
     else
     {
-      u.block(0,0,3,1) = X.t_;
+      u.template block<3,1>(0,0) = X.t_;
     }
     return u;
   }
@@ -201,10 +202,10 @@ public:
   {
     Mat6 out;
     Mat3 R = q_.R();
-    out.block(0,0,3,3) = R;
-    out.block(0,3,3,3) = Quat<T>::skew(t_)*R;
-    out.block(3,3,3,3) = R;
-    out.block(3,0,3,3) = Mat3::Zero();
+    out.template block<3,3>(0,0) = R;
+    out.template block<3,3>(0,3) = Quat<T>::skew(t_)*R;
+    out.template block<3,3>(3,3) = R;
+    out.template block<3,3>(3,0) = Mat3::Zero();
     return out;
   }
 
