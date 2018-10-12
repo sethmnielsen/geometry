@@ -367,6 +367,17 @@ public:
     return qout;
   }
 
+  template <typename T2>
+  Quat<T2> otimes2(const Quat<T2>& q) const
+  {
+      Quat<T2> qout;
+      qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
+              w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+              w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+              w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+      return qout;
+  }
+
   template<typename T2>
   Quat<T2> boxplus(const Matrix<T2, 3, 1>& delta) const
   {
