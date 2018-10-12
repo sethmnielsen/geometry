@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "gtest/gtest.h"
-#include "xform.h"
+#include "geometry/xform.h"
 
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/unsupported/Eigen/MatrixFunctions>
