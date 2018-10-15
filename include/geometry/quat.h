@@ -65,7 +65,7 @@ public:
   }
 
   Quat& operator= (const Quat& q) { arr_ = q.elements(); }
-  Quat& operator= (const Vec4& in) {arr_ = in; }
+  Quat& operator= (const Ref<const Vec4>& in) {arr_ = in; }
 
   Quat operator+ (const Vec3& v) { return boxplus(v); }
   Quat& operator+= (const Vec3& v)
