@@ -318,7 +318,7 @@ public:
   template<typename T2>
   Vec3 rota(const Matrix<T2,3,1>& v) const
   {
-    Matrix<T2, 3, 1> t = (T2)2.0 * v.cross(bar());
+    Vec3 t = 2.0 * v.cross(bar());
     return v - w() * t + t.cross(bar());
   }
 
