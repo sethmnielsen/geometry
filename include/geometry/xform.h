@@ -214,13 +214,23 @@ public:
     return out;
   }
 
-  template <typename T2>
-  Xform otimes(const Xform<T2>& X2) const
+//  template <typename T2>
+//  Xform otimes(const Xform<T2>& X2) const
+//  {
+//    Xform X;
+//    Vec3 t = (T)2.0*X2.t_.cross(q_.bar());
+//    X.t_ = t_+ X2.t_ - q_.w()* t + t.cross(q_.bar());
+//    X.q_ = q_ * X2.q_;
+//    return X;
+//  }
+
+  template <typename Tout=T, typename T2>
+  Xform<Tout> otimes(const Xform<T2>& X2) const
   {
-    Xform X;
-    Vec3 t = (T)2.0*X2.t_.cross(q_.bar());
+    Xform<Tout> X;
+    Matrix<Tout,3,1> t = (Tout)2.0*X2.t_.cross(q_.bar());
     X.t_ = t_+ X2.t_ - q_.w()* t + t.cross(q_.bar());
-    X.q_ = q_ * X2.q_;
+    X.q_ = q_.template otimes<Tout,T2>(X2.q_);
     return X;
   }
 
@@ -240,9 +250,10 @@ public:
     q_.invert();
   }
 
-  Xform boxplus(const Vec6& delta) const
+  template <typename Tout=T, typename T2>
+  Xform<Tout> boxplus(const Matrix<T2, 6, 1>& delta) const
   {
-    return otimes(Xform::exp(delta));
+    return otimes<Tout, T2>(Xform<T2>::exp(delta));
   }
 
   template<typename T2>

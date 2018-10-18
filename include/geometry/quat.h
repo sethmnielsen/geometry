@@ -315,10 +315,10 @@ public:
 
 
   // The same as R.T * v but faster
-  template<typename T2>
-  Vec3 rota(const Matrix<T2,3,1>& v) const
+  template<typename Tout=T, typename T2>
+  Matrix<Tout, 3, 1> rota(const Matrix<T2,3,1>& v) const
   {
-    Vec3 t = 2.0 * v.cross(bar());
+    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
     return v - w() * t + t.cross(bar());
   }
 
@@ -357,21 +357,21 @@ public:
     return tmp;
   }
 
-  template <typename T2>
-  Quat otimes(const Quat<T2>& q) const
-  {
-    Quat qout;
-    qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
-                  w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
-                  w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
-                  w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
-    return qout;
-  }
+//  template <typename T2>
+//  Quat otimes(const Quat<T2>& q) const
+//  {
+//    Quat qout;
+//    qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
+//                  w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+//                  w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+//                  w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+//    return qout;
+//  }
 
-  template <typename T2>
-  Quat<T2> otimes2(const Quat<T2>& q) const
+  template <typename Tout=T, typename T2>
+  Quat<Tout> otimes(const Quat<T2>& q) const
   {
-      Quat<T2> qout;
+      Quat<Tout> qout;
       qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
               w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
               w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
@@ -379,10 +379,10 @@ public:
       return qout;
   }
 
-  template<typename T2>
-  Quat<T2> boxplus(const Matrix<T2, 3, 1>& delta) const
+  template<typename Tout=T, typename T2>
+  Quat<Tout> boxplus(const Matrix<T2, 3, 1>& delta) const
   {
-    return otimes(exp(delta));
+    return otimes<Tout, T2>(Quat<T2>::exp(delta));
   }
 
   template<typename T2>
