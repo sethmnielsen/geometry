@@ -83,6 +83,11 @@ public:
     t_ = t;
   }
 
+  T* data()
+  {
+      return arr_.data();
+  }
+
 //  Xform(const Mat4& X) :
 //    arr_(buf_),
 //    t_(arr_.data()),
