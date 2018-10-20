@@ -65,7 +65,9 @@ public:
   }
 
   Quat& operator= (const Quat& q) { arr_ = q.elements(); }
-  Quat& operator= (const Ref<const Vec4>& in) {arr_ = in; }
+
+  template<typename Derived>
+  Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
 
   Quat operator+ (const Vec3& v) { return boxplus(v); }
   Quat& operator+= (const Vec3& v)
