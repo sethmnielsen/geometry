@@ -42,6 +42,7 @@ public:
 
   Map<Vec4> arr_;
 
+  inline T& operator[] (int i) {return arr_[i];}
   inline T w() const { return arr_(0); }
   inline T x() const { return arr_(1); }
   inline T y() const { return arr_(2); }
