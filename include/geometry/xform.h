@@ -99,6 +99,7 @@ public:
 
   inline Map<Vec3>& t() { return t_;}
   inline Quat<T>& q() { return q_;}
+  inline Map<Vec7>& arr() { return arr_; }
   inline void setq(const Quat<T>& q) {q_ = q;}
   inline void sett(const Vec3&t) {t_ = t;}
 
