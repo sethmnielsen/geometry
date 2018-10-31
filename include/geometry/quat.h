@@ -9,6 +9,18 @@ using namespace Eigen;
 
 namespace quat {
 
+static const Matrix<double,3,2> I_3x2 = [] {
+  Matrix<double,3,2> tmp;
+  tmp << 1, 0, 0, 1, 0, 0;
+  return tmp;
+}();
+
+static const Vector3d e3 = [] {
+  Vector3d tmp;
+  tmp << 0, 0, 1;
+  return tmp;
+}();
+
 template<typename T>
 class Quat
 {
@@ -86,6 +98,12 @@ public:
                 v(2), (T)0.0, -v(0),
                 -v(1), v(0), (T)0.0;
     return skew_mat;
+  }
+
+  template<typename T2>
+  Quat<T2> cast() const
+  {
+    return Quat<T2>(arr_.cast<T2>());
   }
 
   static Quat exp(const Vec3& v)
@@ -209,11 +227,11 @@ public:
     }
     else if (d < -0.99999999)
     {
-      q_out.arr_ << 0, 1, 0, 0; // There are an infinite number of solutions here, choose one
+      q_out.arr_ << (T)0, (T)1, (T)0, (T)0; // There are an infinite number of solutions here, choose one
     }
     else
     {
-      q_out.arr_ << 1, 0, 0, 0;
+      q_out.arr_ << (T)1, (T)0, (T)0, (T)0;
     }
     return q_out;
   }
@@ -397,6 +415,42 @@ public:
       dq.arr_ *= (T2)-1.0;
     }
     return Quat<T2>::log(dq);
+  }
+
+  Matrix<T,3,1> uvec() const
+  {
+    return inverse().rotp(e3.cast<T>());
+  }
+
+  // Get projection from 2D space orthogonal to unit vector
+  Matrix<T,3,2> proj() const
+  {
+    return inverse().R() * I_3x2.cast<T>();
+  }
+
+  // q1 - q2
+  // logarithmic map given two quaternions representing unit vectors
+  static Matrix<T,2,1> log_uvec(const Quat<T>& q1, const Quat<T>& q2)
+  {
+    // get unit vectors
+    Matrix<T,3,1> e1 = q1.uvec();
+    Matrix<T,3,1> e2 = q2.uvec();
+
+    // avoid too small of angles
+    T e2T_e1 = e2.dot(e1);
+    if (e2T_e1 > T(0.999999))
+      return Matrix<T,2,1>(T(0.0), T(0.0));
+    else if (e2T_e1 < T(-0.999999))
+      return Matrix<T,2,1>(T(M_PI), T(0.0));
+    else
+    {
+      // compute axis angle difference
+      Matrix<T,3,1> e2_x_e1 = e2.cross(e1);
+      Matrix<T,3,1> s = acos(e2T_e1) * e2_x_e1.normalized();
+
+      // place error on first vector's tangent space
+      return q1.proj().transpose() * s;
+    }
   }
 
 };
