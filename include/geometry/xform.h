@@ -5,8 +5,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "support.h"
-#include "quat.h"
+#include "geometry/support.h"
+#include "geometry/quat.h"
 
 using namespace Eigen;
 using namespace quat;
