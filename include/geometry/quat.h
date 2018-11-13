@@ -100,11 +100,11 @@ public:
     return skew_mat;
   }
 
-  template<typename T2>
-  Quat<T2> cast() const
-  {
-    return Quat<T2>(arr_.cast<T2>());
-  }
+//  template<typename T2>
+//  Quat<T2> cast() const
+//  {
+//    return quat::Quat<T2>(arr_.cast<T2>());
+//  }
 
   static Quat exp(const Vec3& v)
   {
@@ -394,9 +394,9 @@ public:
   {
       Quat<Tout> qout;
       qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
-              w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
-              w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
-              w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+                    w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+                    w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+                    w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
       return qout;
   }
 
@@ -406,15 +406,15 @@ public:
     return otimes<Tout, T2>(Quat<T2>::exp(delta));
   }
 
-  template<typename T2>
-  Matrix<T2, 3, 1> boxminus(const Quat<T2> &q) const
+  template<typename Tout=T, typename T2>
+  Matrix<Tout, 3, 1> boxminus(const Quat<T2> &q) const
   {
-    Quat<T2> dq = q.inverse().otimes(*this);
+    Quat<Tout> dq = q.inverse().template otimes<Tout>(*this);
     if (dq.w() < 0.0)
     {
-      dq.arr_ *= (T2)-1.0;
+      dq.arr_ *= (Tout)-1.0;
     }
-    return Quat<T2>::log(dq);
+    return Quat<Tout>::log(dq);
   }
 
   Matrix<T,3,1> uvec() const
@@ -430,11 +430,12 @@ public:
 
   // q1 - q2
   // logarithmic map given two quaternions representing unit vectors
-  static Matrix<T,2,1> log_uvec(const Quat<T>& q1, const Quat<T>& q2)
+  template <typename T2, typename T3>
+  static Matrix<T,2,1> log_uvec(const Quat<T2>& q1, const Quat<T3>& q2)
   {
     // get unit vectors
-    Matrix<T,3,1> e1 = q1.uvec();
-    Matrix<T,3,1> e2 = q2.uvec();
+    Matrix<T2,3,1> e1 = q1.uvec();
+    Matrix<T3,3,1> e2 = q2.uvec();
 
     // avoid too small of angles
     T e2T_e1 = e2.dot(e1);
