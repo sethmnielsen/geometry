@@ -251,28 +251,32 @@ public:
     return q_out;
   }
 
-  Vec3 euler() const
-  {
-    Vec3 out;
-    out << atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y())),
-        asin(2.0*(w()*y() - z()*x())),
-        atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
-    return out;
-  }
-
   T roll() const
   {
-    return atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y()));
+    return atan2(T(2.0)*(w()*x() + y()*z()), T(1.0) - T(2.0)*(x()*x() + y()*y()));
   }
 
   T pitch() const
   {
-    return asin(2.0*(w()*y() - z()*x()));
+    const T val = T(2.0) * (w()*y() - x()*z());
+
+    // hold at 90 degrees if invalid
+    if (fabs(val) > T(1.0))
+      return copysign(T(1.0), val) * T(M_PI) / T(2.0);
+    else
+      return asin(val);
   }
 
   T yaw() const
   {
-    return atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
+    return atan2(T(2.0)*(w()*z() + x()*y()), T(1.0) - T(2.0)*(y()*y() + z()*z()));
+  }
+
+  Vec3 euler() const
+  {
+    Vec3 out;
+    out << roll(), pitch(), yaw();
+    return out;
   }
 
   Vec3 bar() const
