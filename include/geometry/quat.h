@@ -89,7 +89,7 @@ public:
   }
 
   template<typename T2>
-  Matrix<T2,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
+  Matrix<T,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
 
   static Matrix<T,3,3> skew(const Vec3& v)
   {
