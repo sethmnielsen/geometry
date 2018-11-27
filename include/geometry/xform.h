@@ -220,16 +220,6 @@ public:
     return out;
   }
 
-//  template <typename T2>
-//  Xform otimes(const Xform<T2>& X2) const
-//  {
-//    Xform X;
-//    Vec3 t = (T)2.0*X2.t_.cross(q_.bar());
-//    X.t_ = t_+ X2.t_ - q_.w()* t + t.cross(q_.bar());
-//    X.q_ = q_ * X2.q_;
-//    return X;
-//  }
-
   template <typename Tout=T, typename T2>
   Xform<Tout> otimes(const Xform<T2>& X2) const
   {
