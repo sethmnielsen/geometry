@@ -195,4 +195,4 @@ private:
     const Matrix2d I_2x2 = Matrix2d::Identity();
 };
 
-
+typedef Camera<double> Camerad;
