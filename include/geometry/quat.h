@@ -34,7 +34,10 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Quat() :
     arr_(buf_)
-  {}
+  {
+    arr_.setZero();
+    arr_(0) = (T)1.0;
+  }
 
   Quat(const Ref<const Vec4> arr) :
     arr_(const_cast<T*>(arr.data()))
@@ -49,6 +52,21 @@ public:
   Quat(const T* data) :
     arr_(const_cast<T*>(data))
   {}
+
+  Quat(const T& roll, const T& pitch, const T& yaw) : arr_(buf_)
+  {
+    T cp = cos(roll/2.0);
+    T ct = cos(pitch/2.0);
+    T cs = cos(yaw/2.0);
+    T sp = sin(roll/2.0);
+    T st = sin(pitch/2.0);
+    T ss = sin(yaw/2.0);
+
+    arr_ << cp*ct*cs + sp*st*ss,
+            sp*ct*cs - cp*st*ss,
+            cp*st*cs + sp*ct*ss,
+            cp*ct*ss - sp*st*cs;
+  }
 
   inline T* data() { return arr_.data(); }
 
@@ -195,7 +213,7 @@ public:
     return out;
   }
 
-  static Quat from_euler(const T roll, const T pitch, const T yaw)
+  static Quat from_euler(const T& roll, const T& pitch, const T& yaw)
   {
     T cp = cos(roll/2.0);
     T ct = cos(pitch/2.0);

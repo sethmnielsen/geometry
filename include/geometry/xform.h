@@ -42,7 +42,10 @@ public:
     arr_(buf_),
     t_(arr_.data()),
     q_(arr_.data() + 3)
-  {}
+  {
+    arr_.setZero();
+    arr_(3) = (T)1.0;
+  }
 
   Xform(const Ref<const Vec7> arr) :
     arr_(const_cast<T*>(arr.data())),
