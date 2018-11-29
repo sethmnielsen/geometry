@@ -10,6 +10,9 @@ using namespace Eigen;
 template <typename T>
 class Camera
 {
+
+enum {FX, FY, CX, CY, RX, RY, D1, D2, D3, D4, D5, S, BUF_SIZE};
+
 public:
     typedef Matrix<T,2,1> Vec2;
     typedef Matrix<T,2,2> Mat2;
@@ -17,32 +20,60 @@ public:
     typedef Matrix<T,5,1> Vec5;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s) :
-        focal_len_(f.data()),
-        cam_center_(c.data()),
-        s_(s),
-        distortion_(d.data())
-    {}
-
-    Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s, const Vector2d& size) :
-        focal_len_(f.data()),
-        cam_center_(c.data()),
-        s_(s),
-        distortion_(d.data())
+    Camera() :
+        focal_len_(buf_),
+        cam_center_(buf_+CX),
+        image_size_(buf_+RX),
+        distortion_(buf_+D1),
+        s_(buf_[S])
     {
-        setSize(size);
+      focal_len_.setZero();
+      cam_center_.setZero();
+      image_size_.setZero();
+      distortion_.setZero();
+      s_ = 0;
     }
 
-    Camera(const T* f, const T* c, const T* d, const T* s) :
-        focal_len_(f),
-        cam_center_(c),
-        s_(*s),
-        distortion_(d)
+    Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s) :
+        focal_len_(const_cast<T*>(f.data())),
+        cam_center_(const_cast<T*>(c.data())),
+        image_size_(buf_+RX),
+        distortion_(const_cast<T*>(d.data())),
+        s_(*const_cast<T*>(&s))
     {}
 
-    void setSize(const Vector2d& size)
+
+    Camera(const T* f, const T* c, const T* d, const T* s) :
+        focal_len_ (const_cast<T*>(f)),
+        cam_center_(const_cast<T*>(c)),
+        image_size_(buf_+RX),
+        distortion_(const_cast<T*>(d)),
+        s_(*const_cast<T*>(s))
+    {}
+
+    Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s, const Vec2& size) :
+        focal_len_(const_cast<T*>(f.data())),
+        cam_center_(const_cast<T*>(c.data())),
+        image_size_(const_cast<T*>(size.data())),
+        distortion_(const_cast<T*>(d.data())),
+        s_(*const_cast<T*>(&s))
+    {}
+
+    Camera(const T* f, const T* c, const T* d, const T* s, const T* size) :
+        focal_len_ (const_cast<T*>(f)),
+        cam_center_(const_cast<T*>(c)),
+        image_size_(const_cast<T*>(size)),
+        distortion_(const_cast<T*>(d)),
+        s_(*const_cast<T*>(s))
+    {}
+
+    Camera& operator=(const Camera& cam)
     {
-        image_size_ = size;
+      focal_len_ = cam.focal_len_;
+      cam_center_ = cam.cam_center_;
+      distortion_ = cam.distortion_;
+      s_ = cam.s_;
+      image_size_ = cam.image_size_;
     }
 
     void unDistort(const Vec2& pi_u, Vec2& pi_d) const
@@ -185,14 +216,21 @@ public:
         pt *= depth / pt.norm();
     }
 
-    Map<const Vec2> focal_len_;
-    Map<const Vec2> cam_center_;
-    Map<const Vec5> distortion_;
-    const T& s_;
-    Vector2d image_size_;
+    template<typename T2>
+    Camera<T2> cast()
+    {
+      return Camera<T2>(focal_len_.cast<T2>(), cam_center_.cast<T2>(), distortion_.cast<T2>(), (T2)s_, image_size_.cast<T2>());
+    }
+
+    Map<Vec2> focal_len_;
+    Map<Vec2> cam_center_;
+    Map<Vec2> image_size_;
+    Map<Vec5> distortion_;
+    T& s_;
 
 private:
     const Matrix2d I_2x2 = Matrix2d::Identity();
+    T buf_[BUF_SIZE]; // [fx, fy, cx, cy, size_x, size_y, d1, d2, d3, d4, d5, s]
 };
 
 typedef Camera<double> Camerad;
