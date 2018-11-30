@@ -80,10 +80,10 @@ public:
     const Camera<T2> cast() const
     {
       Camera<T2> cam;
-      cam.focal_len_ = focal_len_.cast<T2>();
-      cam.cam_center_ = cam_center_.cast<T2>();
-      cam.image_size_ = image_size_.cast<T2>();
-      cam.distortion_ = distortion_.cast<T2>();
+      cam.focal_len_ = focal_len_.template cast<T2>();
+      cam.cam_center_ = cam_center_.template cast<T2>();
+      cam.image_size_ = image_size_.template cast<T2>();
+      cam.distortion_ = distortion_.template cast<T2>();
       cam.s_ = T2(s_);
       return cam;
     }
