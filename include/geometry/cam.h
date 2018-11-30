@@ -31,7 +31,7 @@ public:
       cam_center_.setZero();
       image_size_.setZero();
       distortion_.setZero();
-      s_ = 0;
+      s_ = T(0);
     }
 
     Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s) :
@@ -74,6 +74,18 @@ public:
       distortion_ = cam.distortion_;
       s_ = cam.s_;
       image_size_ = cam.image_size_;
+    }
+
+    template<typename T2>
+    const Camera<T2> cast() const
+    {
+      Camera<T2> cam;
+      cam.focal_len_ = focal_len_.cast<T2>();
+      cam.cam_center_ = cam_center_.cast<T2>();
+      cam.image_size_ = image_size_.cast<T2>();
+      cam.distortion_ = distortion_.cast<T2>();
+      cam.s_ = T2(s_);
+      return cam;
     }
 
     void unDistort(const Vec2& pi_u, Vec2& pi_d) const
@@ -212,14 +224,8 @@ public:
         pix2intrinsic(pix, pi_d);
         unDistort(pi_d, pi_u);
         pt.template segment<2>(0) = pi_u;
-        pt(2) = 1.0;
+        pt(2) = (T)1.0;
         pt *= depth / pt.norm();
-    }
-
-    template<typename T2>
-    Camera<T2> cast()
-    {
-      return Camera<T2>(focal_len_.cast<T2>(), cam_center_.cast<T2>(), distortion_.cast<T2>(), (T2)s_, image_size_.cast<T2>());
     }
 
     Map<Vec2> focal_len_;
