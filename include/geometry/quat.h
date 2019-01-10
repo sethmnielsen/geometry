@@ -9,6 +9,18 @@ using namespace Eigen;
 
 namespace quat {
 
+static const Matrix<double,3,2> I_3x2 = [] {
+  Matrix<double,3,2> tmp;
+  tmp << 1, 0, 0, 1, 0, 0;
+  return tmp;
+}();
+
+static const Vector3d e3 = [] {
+  Vector3d tmp;
+  tmp << 0, 0, 1;
+  return tmp;
+}();
+
 template<typename T>
 class Quat
 {
@@ -22,7 +34,10 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Quat() :
     arr_(buf_)
-  {}
+  {
+    arr_.setZero();
+    arr_(0) = (T)1.0;
+  }
 
   Quat(const Ref<const Vec4> arr) :
     arr_(const_cast<T*>(arr.data()))
@@ -38,10 +53,26 @@ public:
     arr_(const_cast<T*>(data))
   {}
 
+  Quat(const T& roll, const T& pitch, const T& yaw) : arr_(buf_)
+  {
+    T cp = cos(roll/2.0);
+    T ct = cos(pitch/2.0);
+    T cs = cos(yaw/2.0);
+    T sp = sin(roll/2.0);
+    T st = sin(pitch/2.0);
+    T ss = sin(yaw/2.0);
+
+    arr_ << cp*ct*cs + sp*st*ss,
+            sp*ct*cs - cp*st*ss,
+            cp*st*cs + sp*ct*ss,
+            cp*ct*ss - sp*st*cs;
+  }
+
   inline T* data() { return arr_.data(); }
 
   Map<Vec4> arr_;
 
+  inline T& operator[] (int i) {return arr_[i];}
   inline T w() const { return arr_(0); }
   inline T x() const { return arr_(1); }
   inline T y() const { return arr_(2); }
@@ -65,7 +96,9 @@ public:
   }
 
   Quat& operator= (const Quat& q) { arr_ = q.elements(); }
-  Quat& operator= (const Ref<const Vec4>& in) {arr_ = in; }
+
+  template<typename Derived>
+  Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
 
   Quat operator+ (const Vec3& v) { return boxplus(v); }
   Quat& operator+= (const Vec3& v)
@@ -74,7 +107,7 @@ public:
   }
 
   template<typename T2>
-  Matrix<T2,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
+  Matrix<T,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
 
   static Matrix<T,3,3> skew(const Vec3& v)
   {
@@ -84,6 +117,12 @@ public:
                 -v(1), v(0), (T)0.0;
     return skew_mat;
   }
+
+//  template<typename T2>
+//  Quat<T2> cast() const
+//  {
+//    return quat::Quat<T2>(arr_.cast<T2>());
+//  }
 
   static Quat exp(const Vec3& v)
   {
@@ -174,7 +213,7 @@ public:
     return out;
   }
 
-  static Quat from_euler(const T roll, const T pitch, const T yaw)
+  static Quat from_euler(const T& roll, const T& pitch, const T& yaw)
   {
     T cp = cos(roll/2.0);
     T ct = cos(pitch/2.0);
@@ -206,11 +245,11 @@ public:
     }
     else if (d < -0.99999999)
     {
-      q_out.arr_ << 0, 1, 0, 0; // There are an infinite number of solutions here, choose one
+      q_out.arr_ << (T)0, (T)1, (T)0, (T)0; // There are an infinite number of solutions here, choose one
     }
     else
     {
-      q_out.arr_ << 1, 0, 0, 0;
+      q_out.arr_ << (T)1, (T)0, (T)0, (T)0;
     }
     return q_out;
   }
@@ -230,28 +269,32 @@ public:
     return q_out;
   }
 
-  Vec3 euler() const
-  {
-    Vec3 out;
-    out << atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y())),
-        asin(2.0*(w()*y() - z()*x())),
-        atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
-    return out;
-  }
-
   T roll() const
   {
-    return atan2(2.0*(w()*x()+y()*z()), 1.0-2.0*(x()*x() + y()*y()));
+    return atan2(T(2.0)*(w()*x() + y()*z()), T(1.0) - T(2.0)*(x()*x() + y()*y()));
   }
 
   T pitch() const
   {
-    return asin(2.0*(w()*y() - z()*x()));
+    const T val = T(2.0) * (w()*y() - x()*z());
+
+    // hold at 90 degrees if invalid
+    if (fabs(val) > T(1.0))
+      return copysign(T(1.0), val) * T(M_PI) / T(2.0);
+    else
+      return asin(val);
   }
 
   T yaw() const
   {
-    return atan2(2.0*(w()*z()+x()*y()), 1.0-2.0*(y()*y() + z()*z()));
+    return atan2(T(2.0)*(w()*z() + x()*y()), T(1.0) - T(2.0)*(y()*y() + z()*z()));
+  }
+
+  Vec3 euler() const
+  {
+    Vec3 out;
+    out << roll(), pitch(), yaw();
+    return out;
   }
 
   Vec3 bar() const
@@ -373,9 +416,9 @@ public:
   {
       Quat<Tout> qout;
       qout.arr_ <<  w() * q.w() - x() *q.x() - y() * q.y() - z() * q.z(),
-              w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
-              w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
-              w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
+                    w() * q.x() + x() *q.w() + y() * q.z() - z() * q.y(),
+                    w() * q.y() - x() *q.z() + y() * q.w() + z() * q.x(),
+                    w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
       return qout;
   }
 
@@ -385,15 +428,52 @@ public:
     return otimes<Tout, T2>(Quat<T2>::exp(delta));
   }
 
-  template<typename T2>
-  Matrix<T2, 3, 1> boxminus(const Quat<T2> &q) const
+  template<typename Tout=T, typename T2>
+  Matrix<Tout, 3, 1> boxminus(const Quat<T2> &q) const
   {
-    Quat<T2> dq = q.inverse().otimes(*this);
+    Quat<Tout> dq = q.inverse().template otimes<Tout>(*this);
     if (dq.w() < 0.0)
     {
-      dq.arr_ *= (T2)-1.0;
+      dq.arr_ *= (Tout)-1.0;
     }
-    return Quat<T2>::log(dq);
+    return Quat<Tout>::log(dq);
+  }
+
+  Matrix<T,3,1> uvec() const
+  {
+    return inverse().rotp(e3.cast<T>());
+  }
+
+  // Get projection from 2D space orthogonal to unit vector
+  Matrix<T,3,2> proj() const
+  {
+    return inverse().R() * I_3x2.cast<T>();
+  }
+
+  // q1 - q2
+  // logarithmic map given two quaternions representing unit vectors
+  template <typename T2, typename T3>
+  static Matrix<T,2,1> log_uvec(const Quat<T2>& q1, const Quat<T3>& q2)
+  {
+    // get unit vectors
+    Matrix<T2,3,1> e1 = q1.uvec();
+    Matrix<T3,3,1> e2 = q2.uvec();
+
+    // avoid too small of angles
+    T e2T_e1 = e2.dot(e1);
+    if (e2T_e1 > T(0.999999))
+      return Matrix<T,2,1>(T(0.0), T(0.0));
+    else if (e2T_e1 < T(-0.999999))
+      return Matrix<T,2,1>(T(M_PI), T(0.0));
+    else
+    {
+      // compute axis angle difference
+      Matrix<T,3,1> e2_x_e1 = e2.cross(e1);
+      Matrix<T,3,1> s = acos(e2T_e1) * e2_x_e1.normalized();
+
+      // place error on first vector's tangent space
+      return q1.proj().transpose() * s;
+    }
   }
 
 };

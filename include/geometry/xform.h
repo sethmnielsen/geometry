@@ -5,8 +5,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "support.h"
-#include "quat.h"
+#include "geometry/support.h"
+#include "geometry/quat.h"
 
 using namespace Eigen;
 using namespace quat;
@@ -42,7 +42,10 @@ public:
     arr_(buf_),
     t_(arr_.data()),
     q_(arr_.data() + 3)
-  {}
+  {
+    arr_.setZero();
+    arr_(3) = (T)1.0;
+  }
 
   Xform(const Ref<const Vec7> arr) :
     arr_(const_cast<T*>(arr.data())),
@@ -104,6 +107,7 @@ public:
 
   inline Map<Vec3>& t() { return t_;}
   inline Quat<T>& q() { return q_;}
+  inline Map<Vec7>& arr() { return arr_; }
   inline void setq(const Quat<T>& q) {q_ = q;}
   inline void sett(const Vec3&t) {t_ = t;}
 
@@ -223,16 +227,6 @@ public:
     Xform out(-q_.rotp(t_), q_.inverse());
     return out;
   }
-
-//  template <typename T2>
-//  Xform otimes(const Xform<T2>& X2) const
-//  {
-//    Xform X;
-//    Vec3 t = (T)2.0*X2.t_.cross(q_.bar());
-//    X.t_ = t_+ X2.t_ - q_.w()* t + t.cross(q_.bar());
-//    X.q_ = q_ * X2.q_;
-//    return X;
-//  }
 
   template <typename Tout=T, typename T2>
   Xform<Tout> otimes(const Xform<T2>& X2) const
