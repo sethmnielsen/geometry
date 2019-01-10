@@ -54,9 +54,10 @@ static const Eigen::Vector3d e_z = [] {
   return tmp;
 }();
 
-inline Eigen::Matrix3d skew(const Eigen::Vector3d v)
+template <typename Derived>
+inline Eigen::Matrix<typename Derived::Scalar, 3, 3> skew(const Eigen::MatrixBase<Derived>& v)
 {
-  Eigen::Matrix3d mat;
+  Eigen::Matrix<typename Derived::Scalar, 3, 3> mat;
   mat << 0.0, -v(2), v(1),
          v(2), 0.0, -v(0),
          -v(1), v(0), 0.0;
@@ -73,6 +74,20 @@ void setNormalRandom(Eigen::MatrixBase<Derived>& M, std::normal_distribution<dou
       M(i,j) = N(g);
     }
   }
+}
+
+template <typename Derived>
+Derived normalRandomVector(std::normal_distribution<double>& N, std::default_random_engine& g)
+{
+  Derived M;
+  for (int i = 0; i < M.rows(); i++)
+  {
+    for (int j = 0; j < M.cols(); j++)
+    {
+      M(i,j) = N(g);
+    }
+  }
+  return M;
 }
 
 template <typename T>
