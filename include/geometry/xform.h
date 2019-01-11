@@ -123,7 +123,7 @@ public:
     q_ = Quat<T>(v.template segment<4>(3));
   }
 
-  Xform operator+ (const Vec6& v) const
+  Xform operator+ (const Ref<const Vec6>& v) const
   {
     return boxplus(v);
   }
@@ -172,7 +172,7 @@ public:
     return out;
   }
 
-  static Xform exp(const Vec6& v)
+  static Xform exp(const Ref<const Vec6>& v)
   {
     Vec3 u = v.template block<3,1>(0,0);
     Vec3 omega = v.template block<3,1>(3,0);
@@ -255,7 +255,7 @@ public:
   }
 
   template <typename Tout=T, typename T2>
-  Xform<Tout> boxplus(const Matrix<T2, 6, 1>& delta) const
+  Xform<Tout> boxplus(const Ref<const Matrix<T2, 6, 1>>& delta) const
   {
     return otimes<Tout, T2>(Xform<T2>::exp(delta));
   }
