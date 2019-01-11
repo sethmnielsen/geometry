@@ -123,7 +123,7 @@ public:
     q_ = Quat<T>(v.template segment<4>(3));
   }
 
-  Xform operator+ (const Vec6& v)
+  Xform operator+ (const Vec6& v) const
   {
     return boxplus(v);
   }
