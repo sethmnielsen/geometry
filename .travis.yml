@@ -1,0 +1,26 @@
+dist: "bionic"
+language: cpp
+
+addons:
+  apt:
+    packages:
+      - build-essential
+      - cmake
+      - libgtest-dev
+      - libeigen3-dev
+
+install:
+  - cd /usr/src/gtest
+  - sudo cmake CMakeLists.txt
+  - sudo make
+  - sudo cp *.a /usr/lib
+  - cd ${TRAVIS_BUILD_DIR}"
+  - gcc --version
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release
+  - make
+  - ./geometry_test
+
