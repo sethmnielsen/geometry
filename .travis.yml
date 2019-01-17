@@ -8,9 +8,13 @@ addons:
       - cmake
       - libgtest-dev
       - libeigen3-dev
+    update: true
+
+before_install:
+  - sudo apt update
+  - sudo apt install -y libgtest-dev libeigen3-dev cmake build-essential
 
 install:
-  - sudo apt install libgtest-dev
   - cd /usr/src/gtest
   - sudo cmake CMakeLists.txt
   - sudo make
