@@ -4,6 +4,7 @@
 
 #include <Eigen/Core>
 
+typedef Eigen::Matrix<double, 1, 1> Vector1d;
 typedef Eigen::Matrix<double, 5, 1> Vector5d;
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 typedef Eigen::Matrix<double, 7, 1> Vector7d;
@@ -11,6 +12,7 @@ typedef Eigen::Matrix<double, 8, 1> Vector8d;
 typedef Eigen::Matrix<double, 9, 1> Vector9d;
 typedef Eigen::Matrix<double, 10, 1> Vector10d;
 
+typedef Eigen::Matrix<double, 1, 1> Matrix1d;
 typedef Eigen::Matrix<double, 5, 5> Matrix5d;
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 typedef Eigen::Matrix<double, 7, 7> Matrix7d;
@@ -55,13 +57,12 @@ static const Eigen::Vector3d e_z = [] {
 }();
 
 template <typename Derived>
-Eigen::Matrix<typename Derived::Scalar,3,3> skew(const Eigen::MatrixBase<Derived>& v)
+inline Eigen::Matrix<typename Derived::Scalar, 3, 3> skew(const Eigen::MatrixBase<Derived>& v)
 {
-  typedef typename Derived::Scalar T;
-  Eigen::Matrix<T,3,3> mat;
-  mat << (T)0.0, -v(2), v(1),
-         v(2), (T)0.0, -v(0),
-         -v(1), v(0), (T)0.0;
+  Eigen::Matrix<typename Derived::Scalar, 3, 3> mat;
+  mat << 0.0, -v(2), v(1),
+         v(2), 0.0, -v(0),
+         -v(1), v(0), 0.0;
   return mat;
 }
 
