@@ -10,6 +10,7 @@ addons:
       - libeigen3-dev
 
 install:
+  - sudo apt install libgtest-dev
   - cd /usr/src/gtest
   - sudo cmake CMakeLists.txt
   - sudo make
