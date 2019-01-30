@@ -56,13 +56,14 @@ static const Eigen::Vector3d e_z = [] {
   return tmp;
 }();
 
-template <typename T>
-inline Eigen::Matrix<T, 3, 3> skew(const Eigen::Matrix<T, 3, 1>& v)
+template <typename Derived>
+inline Eigen::Matrix<typename Derived::Scalar, 3, 3> skew(const Eigen::MatrixBase<Derived>& v)
 {
-  Eigen::Matrix<T, 3, 3> mat;
-  mat << (T)0.0, -v(2), v(1),
-         v(2), (T)0.0, -v(0),
-         -v(1), v(0), (T)0.0;
+  Eigen::Matrix<typename Derived::Scalar, 3, 3> mat;
+  typename Derived::Scalar zr(0.0);
+  mat << zr, -v(2), v(1),
+         v(2), zr, -v(0),
+         -v(1), v(0), zr;
   return mat;
 }
 
