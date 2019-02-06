@@ -100,7 +100,7 @@ public:
   template<typename Derived>
   Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
 
-  Quat operator+ (const Vec3& v) { return boxplus(v); }
+  Quat operator+ (const Vec3& v) const { return boxplus(v); }
   Quat& operator+= (const Vec3& v)
   {
     arr_ = boxplus(v).elements();
