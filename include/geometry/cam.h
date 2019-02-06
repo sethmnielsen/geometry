@@ -138,12 +138,6 @@ public:
             pi_u = pi_u - J*e;
             i++;
         }
-
-
-        if ((pi_u.array() != pi_u.array()).any())
-        {
-            int debug = 1;
-        }
     }
 
     void distortJac(const Vec2& pi_u, Mat2& J) const

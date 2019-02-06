@@ -91,6 +91,11 @@ public:
       return arr_.data();
   }
 
+  const T* data() const
+  {
+      return arr_.data();
+  }
+
 //  Xform(const Mat4& X) :
 //    arr_(buf_),
 //    t_(arr_.data()),
@@ -101,8 +106,11 @@ public:
 //  }
 
   inline Map<Vec3>& t() { return t_;}
+  inline const Map<Vec3>& t() const { return t_;}
   inline Quat<T>& q() { return q_;}
+  inline const Quat<T>& q() const { return q_;}
   inline Map<Vec7>& arr() { return arr_; }
+  inline const Map<Vec7>& arr() const { return arr_; }
   inline void setq(const Quat<T>& q) {q_ = q;}
   inline void sett(const Vec3&t) {t_ = t;}
 
@@ -118,7 +126,7 @@ public:
     q_ = Quat<T>(v.template segment<4>(3));
   }
 
-  Xform operator+ (const Vec6& v)
+  Xform operator+ (const Vec6& v) const
   {
     return boxplus(v);
   }
@@ -131,7 +139,7 @@ public:
 
   Xform& operator+=(const Vec6& v)
   {
-    *this = boxplus(v);
+    arr_ = boxplus(v).elements();
   }
 
   Vec7 elements() const
@@ -167,7 +175,7 @@ public:
     return out;
   }
 
-  static Xform exp(const Vec6& v)
+  static Xform exp(const Ref<const Vec6>& v)
   {
     Vec3 u = v.template block<3,1>(0,0);
     Vec3 omega = v.template block<3,1>(3,0);
