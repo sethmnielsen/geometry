@@ -40,7 +40,13 @@ public:
         image_size_(buf_+RX),
         distortion_(const_cast<T*>(d.data())),
         s_(*const_cast<T*>(&s))
-    {}
+    {
+      K_(0,0) = f(0);
+      K_(1,1) = f(1);
+      K_(0,1) = s;
+      K_(0,2) = c(0);
+      K_(1,2) = c(1);
+    }
 
 
     Camera(const T* f, const T* c, const T* d, const T* s) :
@@ -49,7 +55,13 @@ public:
         image_size_(buf_+RX),
         distortion_(const_cast<T*>(d)),
         s_(*const_cast<T*>(s))
-    {}
+    {
+      K_(0,0) = *f;
+      K_(1,1) = *(f+1);
+      K_(0,1) = *s;
+      K_(0,2) = *c;
+      K_(1,2) = *(c+1);
+    }
 
     Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s, const Vec2& size) :
         focal_len_(const_cast<T*>(f.data())),
@@ -57,7 +69,13 @@ public:
         image_size_(const_cast<T*>(size.data())),
         distortion_(const_cast<T*>(d.data())),
         s_(*const_cast<T*>(&s))
-    {}
+    {
+      K_(0,0) = f(0);
+      K_(1,1) = f(1);
+      K_(0,1) = s;
+      K_(0,2) = c(0);
+      K_(1,2) = c(1);
+    }
 
     Camera(const T* f, const T* c, const T* d, const T* s, const T* size) :
         focal_len_ (const_cast<T*>(f)),
@@ -65,7 +83,13 @@ public:
         image_size_(const_cast<T*>(size)),
         distortion_(const_cast<T*>(d)),
         s_(*const_cast<T*>(s))
-    {}
+    {
+      K_(0,0) = *f;
+      K_(1,1) = *(f+1);
+      K_(0,1) = *s;
+      K_(0,2) = *c;
+      K_(1,2) = *(c+1);
+    }
 
     Camera& operator=(const Camera& cam)
     {
@@ -74,6 +98,7 @@ public:
       distortion_ = cam.distortion_;
       s_ = cam.s_;
       image_size_ = cam.image_size_;
+      K_ = cam.K_;
     }
 
     template<typename T2>
@@ -85,6 +110,7 @@ public:
       cam.image_size_ = image_size_.template cast<T2>();
       cam.distortion_ = distortion_.template cast<T2>();
       cam.s_ = T2(s_);
+      cam.K_ = K_.template cast<T2>();
       return cam;
     }
 
@@ -227,6 +253,7 @@ public:
     Map<Vec2> image_size_;
     Map<Vec5> distortion_;
     T& s_;
+    Matrix<T,3,3> K_ = Matrix<T,3,3>::Identity(); // intrinsic camera matrix
 
 private:
     const Matrix2d I_2x2 = Matrix2d::Identity();
