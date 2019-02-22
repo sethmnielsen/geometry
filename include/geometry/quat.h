@@ -120,7 +120,9 @@ public:
   template<typename T2>
   Quat<T2> cast() const
   {
-    return Quat<T2>(arr_.template cast<T2>());
+    Quat<T2> q;
+    q.arr_ = arr_.template cast<T2>();
+    return q;
   }
 
   static Quat exp(const Vec3& v)

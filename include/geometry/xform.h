@@ -145,7 +145,9 @@ public:
   template<typename T2>
   Xform<T2> cast() const
   {
-    return Xform<T2>(arr_.template cast<T2>());
+    Xform<T2> x;
+    x.arr_ = arr_.template cast<T2>();
+    return x;
   }
 
   Vec7 elements() const
