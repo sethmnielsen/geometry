@@ -142,6 +142,12 @@ public:
     arr_ = boxplus(v).elements();
   }
 
+  template<typename T2>
+  Xform<T2> cast() const
+  {
+    return Xform<T2>(arr_.template cast<T2>());
+  }
+
   Vec7 elements() const
   {
     Vec7 out;

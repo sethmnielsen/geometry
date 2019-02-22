@@ -117,11 +117,11 @@ public:
     return skew_mat;
   }
 
-//  template<typename T2>
-//  Quat<T2> cast() const
-//  {
-//    return quat::Quat<T2>(arr_.cast<T2>());
-//  }
+  template<typename T2>
+  Quat<T2> cast() const
+  {
+    return Quat<T2>(arr_.template cast<T2>());
+  }
 
   static Quat exp(const Vec3& v)
   {
