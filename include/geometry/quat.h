@@ -94,7 +94,7 @@ public:
             w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
   }
 
-  Quat& operator= (const Quat& q) { arr_ = q.elements(); }
+  Quat& operator= (const Quat& q) { arr_ = q.elements(); return *this; }
 
   template<typename Derived>
   Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
