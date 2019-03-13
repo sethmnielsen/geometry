@@ -94,7 +94,7 @@ public:
             w() * q.z() + x() *q.y() - y() * q.x() + z() * q.w();
   }
 
-  Quat& operator= (const Quat& q) { arr_ = q.elements(); }
+  Quat& operator= (const Quat& q) { arr_ = q.elements(); return *this; }
 
   template<typename Derived>
   Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
@@ -117,11 +117,13 @@ public:
     return skew_mat;
   }
 
-//  template<typename T2>
-//  Quat<T2> cast() const
-//  {
-//    return quat::Quat<T2>(arr_.cast<T2>());
-//  }
+  template<typename T2>
+  Quat<T2> cast() const
+  {
+    Quat<T2> q;
+    q.arr_ = arr_.template cast<T2>();
+    return q;
+  }
 
   static Quat exp(const Vec3& v)
   {

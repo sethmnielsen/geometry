@@ -126,7 +126,7 @@ public:
     q_ = Quat<T>(v.template segment<4>(3));
   }
 
-  Xform operator+ (const Ref<const Vec6>& v) const
+  Xform operator+ (const Vec6& v) const
   {
     return boxplus(v);
   }
@@ -139,7 +139,15 @@ public:
 
   Xform& operator+=(const Vec6& v)
   {
-    *this = boxplus(v);
+    arr_ = boxplus(v).elements();
+  }
+
+  template<typename T2>
+  Xform<T2> cast() const
+  {
+    Xform<T2> x;
+    x.arr_ = arr_.template cast<T2>();
+    return x;
   }
 
   Vec7 elements() const
@@ -258,7 +266,7 @@ public:
   }
 
   template <typename Tout=T, typename T2>
-  Xform<Tout> boxplus(const Ref<const Matrix<T2, 6, 1>>& delta) const
+  Xform<Tout> boxplus(const Matrix<T2, 6, 1>& delta) const
   {
     return otimes<Tout, T2>(Xform<T2>::exp(delta));
   }
