@@ -401,9 +401,9 @@ TEST(Camera, Proj_InvProj)
     double s = 0.0;
     Camera<double> cam(focal_len, cam_center, distortion, s, img_size);
 
-    for (int i = 0; i < 640; i++)
+    for (int i = 0; i < 640; i+=10)
     {
-      for(int j = 0; j < 480; j++)
+      for(int j = 0; j < 480; j+=10)
       {
         Vector2d pix{i, j};
         Vector2d pix_out;
