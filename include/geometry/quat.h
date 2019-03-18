@@ -359,24 +359,28 @@ public:
 
 
   // The same as R.T * v but faster
-  template<typename Tout=T, typename T2>
-  Matrix<Tout, 3, 1> rota(const Matrix<T2,3,1>& v) const
+  template<typename Derived>
+  Vec3 rota(const Derived& v) const
   {
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
+    static_assert(Derived::RowsAtCompileTime == Eigen::Dynamic || Derived::RowsAtCompileTime == 3,
+                  "Can only rotate 3x1 vectors");
+    static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
+                  "Can only rotate 3x1 vectors");
+    Vec3 t = (T)2.0 * v.cross(bar());
     return v - w() * t + t.cross(bar());
   }
 
-  Vec3 rota(const Vec3& v) const
-  {
-    Vec3 t = 2.0 * v.cross(bar());
-    return v - w() * t + t.cross(bar());
-  }
+//  Vec3 rota(const Vec3& v) const
+//  {
+//    Vec3 t = 2.0 * v.cross(bar());
+//    return v - w() * t + t.cross(bar());
+//  }
 
   // The same as R * v but faster
-  template<typename T2>
-  Vec3 rotp(const Matrix<T2, 3, 1>& v) const
+  template<typename Tout=T, typename T2>
+  Matrix<Tout, 3, 1> rotp(const Matrix<T2, 3, 1>& v) const
   {
-    Vec3 t = 2.0 * v.cross(bar());
+    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
     return v + w() * t + t.cross(bar());
   }
 
