@@ -143,6 +143,10 @@ public:
     void Distort(const Vec2& pi_d, Vec2& pi_u, double tol=1e-6) const
     {
         pi_u = pi_d;
+
+        if (distortion_(0) == 0)
+            return;
+
         Vec2 pihat_d;
         Mat2 J;
         Vec2 e;
@@ -233,6 +237,13 @@ public:
         intrinsic2pix(pi_d, pix);
     }
 
+    Vec2 proj(const Vec3& pt) const
+    {
+        Vec2 pix;
+        proj(pt, pix);
+        return pix;
+    }
+
     inline bool check(const Vector2d& pix) const
     {
         return !((pix.array() > image_size_.array()).any()|| (pix.array() < 0).any());
@@ -246,6 +257,13 @@ public:
         pt.template segment<2>(0) = pi_u;
         pt(2) = (T)1.0;
         pt *= depth / pt.norm();
+    }
+
+    Vec3 invProj(const Vec2& pix, const T& depth) const
+    {
+        Vec3 zeta;
+        invProj(pix, depth, zeta);
+        return zeta;
     }
 
     Map<Vec2> focal_len_;
