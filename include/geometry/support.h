@@ -79,13 +79,13 @@ void setNormalRandom(Eigen::MatrixBase<Derived>& M, std::normal_distribution<dou
   }
 }
 
-template <typename T, int R, int C>
-Eigen::Matrix<T, R, C> randomNormal(std::normal_distribution<T>& N, std::default_random_engine& g)
+template <typename Derived>
+Derived randomNormal(std::normal_distribution<typename Derived::Scalar>& N, std::default_random_engine& g)
 {
-  Eigen::Matrix<T,R,C> out;
-  for (int i = 0; i < R; i++)
+  Derived out;
+  for (int i = 0; i < Derived::RowsAtCompileTime; i++)
   {
-    for (int j = 0; j < C; j++)
+    for (int j = 0; j < Derived::ColsAtCompileTime; j++)
     {
       out(i,j) = N(g);
     }

@@ -41,11 +41,7 @@ public:
         distortion_(const_cast<T*>(d.data())),
         s_(*const_cast<T*>(&s))
     {
-      K_(0,0) = f(0);
-      K_(1,1) = f(1);
-      K_(0,1) = s;
-      K_(0,2) = c(0);
-      K_(1,2) = c(1);
+      buildK();
     }
 
 
@@ -56,11 +52,7 @@ public:
         distortion_(const_cast<T*>(d)),
         s_(*const_cast<T*>(s))
     {
-      K_(0,0) = *f;
-      K_(1,1) = *(f+1);
-      K_(0,1) = *s;
-      K_(0,2) = *c;
-      K_(1,2) = *(c+1);
+      buildK();
     }
 
     Camera(const Vec2& f, const Vec2& c, const Vec5& d, const T& s, const Vec2& size) :
@@ -70,11 +62,7 @@ public:
         distortion_(const_cast<T*>(d.data())),
         s_(*const_cast<T*>(&s))
     {
-      K_(0,0) = f(0);
-      K_(1,1) = f(1);
-      K_(0,1) = s;
-      K_(0,2) = c(0);
-      K_(1,2) = c(1);
+      buildK();
     }
 
     Camera(const T* f, const T* c, const T* d, const T* s, const T* size) :
@@ -84,11 +72,16 @@ public:
         distortion_(const_cast<T*>(d)),
         s_(*const_cast<T*>(s))
     {
-      K_(0,0) = *f;
-      K_(1,1) = *(f+1);
-      K_(0,1) = *s;
-      K_(0,2) = *c;
-      K_(1,2) = *(c+1);
+        buildK();
+    }
+
+    void buildK()
+    {
+        K_(0,0) = focal_len_(0);
+        K_(1,1) = focal_len_(1);
+        K_(0,1) = s_;
+        K_(0,2) = cam_center_(0);
+        K_(1,2) = cam_center_(1);
     }
 
     Camera& operator=(const Camera& cam)
@@ -116,6 +109,9 @@ public:
 
     void unDistort(const Vec2& pi_u, Vec2& pi_d) const
     {
+        if (distortion_(0) == 0)
+            return;
+
         const T k1 = distortion_(0);
         const T k2 = distortion_(1);
         const T p1 = distortion_(2);
