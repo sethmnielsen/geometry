@@ -114,16 +114,29 @@ public:
   inline void setq(const Quat<T>& q) {q_ = q;}
   inline void sett(const Vec3&t) {t_ = t;}
 
-  Xform operator* (const Xform& X) const {return otimes(X);}
+  Xform operator* (const Xform& X) const
+  {
+      return otimes(X);
+  }
+
   Xform& operator*= (const Xform& X)
   {
     t_ = t_ + q_.rotp(X.t_);
     q_ = q_ * X.q_;
   }
-  Xform& operator=(const Xform& X) {t_ = X.t_; q_ = X.q_;}
-  Xform& operator=(const Vec7& v) {
+
+  Xform& operator=(const Xform& X)
+  {
+      t_ = X.t_;
+      q_ = X.q_;
+      return *this;
+  }
+
+  Xform& operator=(const Vec7& v)
+  {
     t_ = v.template segment<3>(0);
     q_ = Quat<T>(v.template segment<4>(3));
+    return *this;
   }
 
   Xform operator+ (const Vec6& v) const
