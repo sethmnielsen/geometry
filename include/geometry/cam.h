@@ -110,7 +110,10 @@ public:
     void unDistort(const Vec2& pi_u, Vec2& pi_d) const
     {
         if (distortion_(0) == 0)
+        {
+            pi_d = pi_u;
             return;
+        }
 
         const T k1 = distortion_(0);
         const T k2 = distortion_(1);
@@ -206,10 +209,10 @@ public:
 
     void pix2intrinsic(const Vec2& pix, Vec2& pi) const
     {
-        const T fx = focal_len_.x();
-        const T fy = focal_len_.y();
-        const T cx = cam_center_.x();
-        const T cy = cam_center_.y();
+        const T& fx(focal_len_.x());
+        const T& fy(focal_len_.y());
+        const T& cx(cam_center_.x());
+        const T& cy(cam_center_.y());
         pi << (1.0/fx) * (pix.x() - cx - (s_/fy) * (pix.y() - cy)),
                 (1.0/fy) * (pix.y() - cy);
     }
@@ -226,9 +229,8 @@ public:
 
     void proj(const Vec3& pt, Vec2& pix) const
     {
-        const T pt_z = pt(2);
         Vec2 pi_d;
-        Vec2 pi_u = (pt.template segment<2>(0) / pt_z);
+        Vec2 pi_u = pt.template topRows<2>() / pt.z();
         Distort(pi_u, pi_d);
         intrinsic2pix(pi_d, pix);
     }

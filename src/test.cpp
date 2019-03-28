@@ -443,6 +443,31 @@ TEST(Camera, Distort_UnDistort)
     EXPECT_NEAR(pix_d2.y(), pix_d.y(), 1e-3);
 }
 
+TEST(Camera, Distort_UnDistort_Calibrated)
+{
+    Vector2d focal_len{250.0, 250.0};
+    Vector2d cam_center{320.0, 240.0};
+    Vector2d img_size{640, 480};
+    Vector5d distortion = Vector5d::Zero();
+    double s = 0.0;
+    Camera<double> cam(focal_len, cam_center, distortion, s, img_size);
+
+    Vector2d pix_d, pix_u;
+    Vector2d pix_d2, pi_d2;
+    Vector3d pt{1.0, 0.5, 2.0};
+
+    cam.proj(pt, pix_d);
+    Vector2d pi_d, pi_u;
+
+    cam.pix2intrinsic(pix_d, pi_d);
+    cam.Distort(pi_d, pi_u);
+    cam.unDistort(pi_u, pi_d2);
+    cam.intrinsic2pix(pi_d2, pix_d2);
+
+    EXPECT_NEAR(pix_d2.x(), pix_d.x(), 1e-3);
+    EXPECT_NEAR(pix_d2.y(), pix_d.y(), 1e-3);
+}
+
 TEST(Camera, UnDistort_Distort)
 {
     Vector2d focal_len{250.0, 250.0};
@@ -467,4 +492,31 @@ TEST(Camera, UnDistort_Distort)
     EXPECT_NEAR(pix_u2.x(), pix_u.x(), 1e-3);
     EXPECT_NEAR(pix_u2.y(), pix_u.y(), 1e-3);
 }
+
+TEST(Camera, UnDistort_Distort_Calibrated)
+{
+    Vector2d focal_len{250.0, 250.0};
+    Vector2d cam_center{320.0, 240.0};
+    Vector2d img_size{640, 480};
+    Vector5d distortion = Vector5d::Zero();
+    double s = 0.0;
+    Camera<double> cam(focal_len, cam_center, distortion, s, img_size);
+
+    Vector2d pix_d, pix_u;
+    Vector2d pix_u2, pi_u2;
+    Vector3d pt{1.0, 0.5, 2.0};
+
+    cam.proj(pt, pix_d);
+    Vector2d pi_d, pi_u;
+
+    cam.pix2intrinsic(pix_u, pi_u);
+    cam.unDistort(pi_u, pi_d);
+    cam.Distort(pi_d, pi_u2);
+    cam.intrinsic2pix(pi_u2, pix_u2);
+
+    EXPECT_NEAR(pix_u2.x(), pix_u.x(), 1e-3);
+    EXPECT_NEAR(pix_u2.y(), pix_u.y(), 1e-3);
+}
+
+
 

@@ -123,6 +123,7 @@ public:
   {
     t_ = t_ + q_.rotp(X.t_);
     q_ = q_ * X.q_;
+    return *this;
   }
 
   Xform& operator=(const Xform& X)
@@ -153,6 +154,7 @@ public:
   Xform& operator+=(const Vec6& v)
   {
     arr_ = boxplus(v).elements();
+    return *this;
   }
 
   template<typename T2>
@@ -262,20 +264,47 @@ public:
     return X;
   }
 
-  Vec3 transforma(const Vec3& v) const
+  template<typename Tout=T, typename Derived>
+  Matrix<Tout, 3, 1> transforma(const Derived& v) const
   {
-    return q_.rota(v) + t_;
+    static_assert(Derived::RowsAtCompileTime == Eigen::Dynamic
+                  || Derived::RowsAtCompileTime == 3,
+                  "Can only transform 3x1 vectors");
+    static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic
+                  || Derived::ColsAtCompileTime == 1,
+                  "Can only transform 3x1 vectors");
+
+    return q_.template rota<Tout>(v) + t_;
   }
 
-  Vec3 transformp(const Vec3& v) const
+  template<typename Tout=T, typename Derived>
+  Matrix<Tout, 3, 1> transformp(const Derived& v) const
   {
-    return q_.rotp(v - t_);
+    static_assert(Derived::RowsAtCompileTime == 3,
+                  "Can only transform 3x1 vectors");
+    static_assert(Derived::ColsAtCompileTime == 1,
+                  "Can only transform 3x1 vectors");
+
+    return q_.template rotp<Tout>(v - t_);
+  }
+
+  template<typename Tout=T, typename Derived>
+  Matrix<Tout, 3, 1> rota(const Derived& v) const
+  {
+    return q_.template rota<Tout>(v);
+  }
+
+  template<typename Tout=T, typename Derived>
+  Matrix<Tout, 3, 1> rotp(const Derived& v) const
+  {
+      return q_.template rotp<Tout>(v);
   }
 
   Xform& invert()
   {
     t_ = -q_.rotp(t_);
     q_.invert();
+    return *this;
   }
 
   template <typename Tout=T, typename T2>
