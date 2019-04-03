@@ -298,9 +298,13 @@ public:
     return out;
   }
 
-  Vec3 bar() const
+  VectorBlock<const Map<Vec4>,3> bar() const
   {
-    return arr_.template block<3,1>(1,0);
+    return arr_.template segment<3>(1);
+  }
+  VectorBlock<Map<Vec4>,3> bar()
+  {
+      return arr_.template segment<3>(1);
   }
 
   Matrix<T,3,3> R() const
