@@ -298,9 +298,14 @@ public:
     return out;
   }
 
-  Vec3 bar() const
+  VectorBlock<Map<Vec4>,3> bar()
   {
-    return arr_.template block<3,1>(1,0);
+    return arr_.template segment<3>(1);
+  }
+
+  VectorBlock<const Map<Vec4>,3> bar() const
+  {
+      return arr_.template segment<3>(1);
   }
 
   Matrix<T,3,3> R() const
@@ -366,8 +371,8 @@ public:
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
-    return v - w() * t + t.cross(bar());
+    auto t = v.cross(bar());
+    return v - w() * (Tout)2.0 * (t + t.cross(bar()));
   }
 
 //  Vec3 rota(const Vec3& v) const
@@ -384,8 +389,8 @@ public:
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
-    return v + w() * t + t.cross(bar());
+    auto t = v.cross(bar());
+    return v + w() * (Tout)2.0 *(t + t.cross(bar()));
   }
 
 //  template<typename Tout=T, typename T2>
