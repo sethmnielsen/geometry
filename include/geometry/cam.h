@@ -276,4 +276,4 @@ private:
     T buf_[BUF_SIZE]; // [fx, fy, cx, cy, size_x, size_y, d1, d2, d3, d4, d5, s]
 };
 
-typedef Camera<double> Camerad;
+typedef Camera<double> Cam;
