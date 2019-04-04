@@ -370,8 +370,8 @@ public:
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
-    return v - w() * t + t.cross(bar());
+    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
+    return v - w() * t + t.cross(arr_.template segment<3>(1));
   }
 
 //  Vec3 rota(const Vec3& v) const
@@ -388,8 +388,8 @@ public:
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
-    return v + w() * t + t.cross(bar());
+    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
+    return v + w() * t + t.cross(arr_.template segment<3>(1));
   }
 
 //  template<typename Tout=T, typename T2>
