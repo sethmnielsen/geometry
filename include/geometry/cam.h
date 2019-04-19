@@ -3,10 +3,6 @@
 #include <vector>
 #include <Eigen/Core>
 
-using namespace std;
-using namespace Eigen;
-
-
 template <typename T>
 class Camera
 {
@@ -14,10 +10,10 @@ class Camera
 enum {FX, FY, CX, CY, RX, RY, D1, D2, D3, D4, D5, S, BUF_SIZE};
 
 public:
-    typedef Matrix<T,2,1> Vec2;
-    typedef Matrix<T,2,2> Mat2;
-    typedef Matrix<T,3,1> Vec3;
-    typedef Matrix<T,5,1> Vec5;
+    typedef Eigen::Matrix<T,2,1> Vec2;
+    typedef Eigen::Matrix<T,2,2> Mat2;
+    typedef Eigen::Matrix<T,3,1> Vec3;
+    typedef Eigen::Matrix<T,5,1> Vec5;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     Camera() :
@@ -242,7 +238,7 @@ public:
         return pix;
     }
 
-    inline bool check(const Vector2d& pix) const
+    inline bool check(const Eigen::Vector2d& pix) const
     {
         return !((pix.array() > image_size_.array()).any()|| (pix.array() < 0).any());
     }
@@ -264,15 +260,15 @@ public:
         return zeta;
     }
 
-    Map<Vec2> focal_len_;
-    Map<Vec2> cam_center_;
-    Map<Vec2> image_size_;
-    Map<Vec5> distortion_;
+    Eigen::Map<Vec2> focal_len_;
+    Eigen::Map<Vec2> cam_center_;
+    Eigen::Map<Vec2> image_size_;
+    Eigen::Map<Vec5> distortion_;
     T& s_;
-    Matrix<T,3,3> K_ = Matrix<T,3,3>::Identity(); // intrinsic camera matrix
+    Eigen::Matrix<T,3,3> K_ = Eigen::Matrix<T,3,3>::Identity(); // intrinsic camera matrix
 
 private:
-    const Matrix2d I_2x2 = Matrix2d::Identity();
+    const Eigen::Matrix2d I_2x2 = Eigen::Matrix2d::Identity();
     T buf_[BUF_SIZE]; // [fx, fy, cx, cy, size_x, size_y, d1, d2, d3, d4, d5, s]
 };
 

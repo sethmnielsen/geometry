@@ -4,18 +4,16 @@
 #include <math.h>
 #include <iostream>
 
-using namespace Eigen;
-
 namespace quat {
 
-static const Matrix<double,3,2> I_3x2 = [] {
-  Matrix<double,3,2> tmp;
+static const Eigen::Matrix<double,3,2> I_3x2 = [] {
+  Eigen::Matrix<double,3,2> tmp;
   tmp << 1, 0, 0, 1, 0, 0;
   return tmp;
 }();
 
-static const Vector3d e3 = [] {
-  Vector3d tmp;
+static const Eigen::Vector3d e3 = [] {
+  Eigen::Vector3d tmp;
   tmp << 0, 0, 1;
   return tmp;
 }();
@@ -25,8 +23,8 @@ class Quat
 {
 
 private:
-  typedef Matrix<T,4,1> Vec4;
-  typedef Matrix<T,3,1> Vec3;
+  typedef Eigen::Matrix<T,4,1> Vec4;
+  typedef Eigen::Matrix<T,3,1> Vec3;
   T buf_[4];
 
 public:
@@ -38,7 +36,7 @@ public:
     arr_(0) = (T)1.0;
   }
 
-  Quat(const Ref<const Vec4> arr) :
+  Quat(const Eigen::Ref<const Vec4> arr) :
     arr_(const_cast<T*>(arr.data()))
   {}
 
@@ -69,7 +67,7 @@ public:
 
   inline T* data() { return arr_.data(); }
 
-  Map<Vec4> arr_;
+  Eigen::Map<Vec4> arr_;
 
   inline T& operator[] (int i) {return arr_[i];}
   inline T w() const { return arr_(0); }
@@ -97,7 +95,7 @@ public:
   Quat& operator= (const Quat& q) { arr_ = q.elements(); return *this; }
 
   template<typename Derived>
-  Quat& operator= (MatrixBase<Derived> const& in) {arr_ = in; }
+  Quat& operator= (Eigen::MatrixBase<Derived> const& in) {arr_ = in; }
 
   Quat operator+ (const Vec3& v) const { return boxplus(v); }
   Quat& operator+= (const Vec3& v)
@@ -106,11 +104,11 @@ public:
   }
 
   template<typename T2>
-  Matrix<T,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
+  Eigen::Matrix<T,3,1> operator- (const Quat<T2>& q) const {return boxminus(q);}
 
-  static Matrix<T,3,3> skew(const Vec3& v)
+  static Eigen::Matrix<T,3,3> skew(const Vec3& v)
   {
-    static Matrix<T,3,3> skew_mat;
+    static Eigen::Matrix<T,3,3> skew_mat;
     skew_mat << (T)0.0, -v(2), v(1),
                 v(2), (T)0.0, -v(0),
                 -v(1), v(0), (T)0.0;
@@ -161,7 +159,7 @@ public:
     return out;
   }
 
-  static Quat from_R(const Matrix<T,3,3>& m)
+  static Quat from_R(const Eigen::Matrix<T,3,3>& m)
   {
     Quat q;
     T tr = m.trace();
@@ -298,16 +296,16 @@ public:
     return out;
   }
 
-  VectorBlock<const Map<Vec4>,3> bar() const
+  Eigen::VectorBlock<const Eigen::Map<Vec4>,3> bar() const
   {
     return arr_.template segment<3>(1);
   }
-  VectorBlock<Map<Vec4>,3> bar()
+  Eigen::VectorBlock<Eigen::Map<Vec4>,3> bar()
   {
       return arr_.template segment<3>(1);
   }
 
-  Matrix<T,3,3> R() const
+  Eigen::Matrix<T,3,3> R() const
   {
     T wx = w()*x();
     T wy = w()*y();
@@ -318,7 +316,7 @@ public:
     T yy = y()*y();
     T yz = y()*z();
     T zz = z()*z();
-    Matrix<T,3,3> out;
+    Eigen::Matrix<T,3,3> out;
     out << 1. - 2.*yy - 2.*zz, 2.*xy + 2.*wz,      2.*xz - 2.*wy,
            2.*xy - 2.*wz,      1. - 2.*xx - 2.*zz, 2.*yz + 2.*wx,
            2.*xz + 2.*wy,      2.*yz - 2.*wx,      1. - 2.*xx - 2.*yy;
@@ -337,9 +335,9 @@ public:
     arr_ /= arr_.norm();
   }
 
-  Matrix<T, 3, 2> doublerota(const Matrix<T, 3, 2>& v) const
+  Eigen::Matrix<T, 3, 2> doublerota(const Eigen::Matrix<T, 3, 2>& v) const
   {
-    Matrix<T, 3, 2> out(3, 2);
+    Eigen::Matrix<T, 3, 2> out(3, 2);
     Vec3 t;
     for (int i = 0; i < 2; ++i)
     {
@@ -349,9 +347,9 @@ public:
     return out;
   }
 
-  Matrix<T, 3, 2> doublerotp(const Matrix<T, 3, 2>& v) const
+  Eigen::Matrix<T, 3, 2> doublerotp(const Eigen::Matrix<T, 3, 2>& v) const
   {
-    Matrix<T, 3, 2> out(3, 2);
+    Eigen::Matrix<T, 3, 2> out(3, 2);
     Vec3 t;
     for (int i = 0; i < 2; ++i)
     {
@@ -364,13 +362,13 @@ public:
 
   // The same as R.T * v but faster
   template<typename Tout=T, typename Derived>
-  Matrix<Tout, 3, 1> rota(const Derived& v) const
+  Eigen::Matrix<Tout, 3, 1> rota(const Derived& v) const
   {
     static_assert(Derived::RowsAtCompileTime == Eigen::Dynamic || Derived::RowsAtCompileTime == 3,
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
+    Eigen::Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
     return v - w() * t + t.cross(arr_.template segment<3>(1));
   }
 
@@ -382,20 +380,20 @@ public:
 
   // The same as R * v but faster
   template<typename Tout=T, typename Derived>
-  Matrix<Tout, 3, 1> rotp(const Derived& v) const
+  Eigen::Matrix<Tout, 3, 1> rotp(const Derived& v) const
   {
     static_assert(Derived::RowsAtCompileTime == Eigen::Dynamic || Derived::RowsAtCompileTime == 3,
                   "Can only rotate 3x1 vectors");
     static_assert(Derived::ColsAtCompileTime == Eigen::Dynamic || Derived::ColsAtCompileTime == 1,
                   "Can only rotate 3x1 vectors");
-    Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
+    Eigen::Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(arr_.template segment<3>(1));
     return v + w() * t + t.cross(arr_.template segment<3>(1));
   }
 
 //  template<typename Tout=T, typename T2>
-//  Matrix<Tout, 3, 1> rota(const Matrix<T2, 3, 1>& v) const
+//  Eigen::Matrix<Tout, 3, 1> rota(const Eigen::Matrix<T2, 3, 1>& v) const
 //  {
-//      Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
+//      Eigen::Matrix<Tout, 3, 1> t = (Tout)2.0 * v.cross(bar());
 //      return v - w() * t + t.cross(bar());
 //  }
 
@@ -443,13 +441,13 @@ public:
   }
 
   template<typename Tout=T, typename T2>
-  Quat<Tout> boxplus(const Matrix<T2, 3, 1>& delta) const
+  Quat<Tout> boxplus(const Eigen::Matrix<T2, 3, 1>& delta) const
   {
     return otimes<Tout, T2>(Quat<T2>::exp(delta));
   }
 
   template<typename Tout=T, typename T2>
-  Matrix<Tout, 3, 1> boxminus(const Quat<T2> &q) const
+  Eigen::Matrix<Tout, 3, 1> boxminus(const Quat<T2> &q) const
   {
     Quat<Tout> dq = q.inverse().template otimes<Tout>(*this);
     if (dq.w() < 0.0)
@@ -459,13 +457,13 @@ public:
     return Quat<Tout>::log(dq);
   }
 
-  Matrix<T,3,1> uvec() const
+  Eigen::Matrix<T,3,1> uvec() const
   {
     return inverse().rotp(e3.cast<T>());
   }
 
   // Get projection from 2D space orthogonal to unit vector
-  Matrix<T,3,2> proj() const
+  Eigen::Matrix<T,3,2> proj() const
   {
     return inverse().R() * I_3x2.cast<T>();
   }
@@ -473,23 +471,23 @@ public:
   // q1 - q2
   // logarithmic map given two quaternions representing unit vectors
   template <typename T2, typename T3>
-  static Matrix<T,2,1> log_uvec(const Quat<T2>& q1, const Quat<T3>& q2)
+  static Eigen::Matrix<T,2,1> log_uvec(const Quat<T2>& q1, const Quat<T3>& q2)
   {
     // get unit vectors
-    Matrix<T2,3,1> e1 = q1.uvec();
-    Matrix<T3,3,1> e2 = q2.uvec();
+    Eigen::Matrix<T2,3,1> e1 = q1.uvec();
+    Eigen::Matrix<T3,3,1> e2 = q2.uvec();
 
     // avoid too small of angles
     T e2T_e1 = e2.dot(e1);
     if (e2T_e1 > T(0.999999))
-      return Matrix<T,2,1>(T(0.0), T(0.0));
+      return Eigen::Matrix<T,2,1>(T(0.0), T(0.0));
     else if (e2T_e1 < T(-0.999999))
-      return Matrix<T,2,1>(T(M_PI), T(0.0));
+      return Eigen::Matrix<T,2,1>(T(M_PI), T(0.0));
     else
     {
       // compute axis angle difference
-      Matrix<T,3,1> e2_x_e1 = e2.cross(e1);
-      Matrix<T,3,1> s = acos(e2T_e1) * e2_x_e1.normalized();
+      Eigen::Matrix<T,3,1> e2_x_e1 = e2.cross(e1);
+      Eigen::Matrix<T,3,1> s = acos(e2T_e1) * e2_x_e1.normalized();
 
       // place error on first vector's tangent space
       return q1.proj().transpose() * s;
