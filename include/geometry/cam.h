@@ -105,7 +105,7 @@ public:
 
     void unDistort(const Vec2& pi_u, Vec2& pi_d) const
     {
-        if (distortion_(0) == 0)
+        if (distortion_(0) == (T)0)
         {
             pi_d = pi_u;
             return;
@@ -139,7 +139,7 @@ public:
     {
         pi_u = pi_d;
 
-        if (distortion_(0) == 0)
+        if (distortion_(0) == (T)0)
             return;
 
         Vec2 pihat_d;

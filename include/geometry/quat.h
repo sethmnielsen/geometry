@@ -479,9 +479,9 @@ public:
 
     // avoid too small of angles
     T e2T_e1 = e2.dot(e1);
-    if (e2T_e1 > T(0.999999))
+    if (e2T_e1 > T(1.0 - 1e-8))
       return Eigen::Matrix<T,2,1>(T(0.0), T(0.0));
-    else if (e2T_e1 < T(-0.999999))
+    else if (e2T_e1 < -T(1.0 - 1e-8))
       return Eigen::Matrix<T,2,1>(T(M_PI), T(0.0));
     else
     {
