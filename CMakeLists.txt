@@ -13,9 +13,10 @@ target_include_directories(geometry INTERFACE
 option(BUILD_TESTS "Build Tests" OFF)
 if (BUILD_TESTS)
 	find_package(GTest REQUIRED)
-	include_directories(${GTEST_INCLUDE_DIRS})
+        find_package(OpenCV REQUIRED)
 	add_executable(geometry_test src/test.cpp)
-	target_link_libraries(geometry_test ${GTEST_LIBRARIES} gtest gtest_main pthread)
+        target_include_directories(geometry_test PUBLIC include ${GTEST_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+        target_link_libraries(geometry_test ${GTEST_LIBRARIES} gtest gtest_main pthread ${OpenCV_LIBRARIES})
 endif()
 
 
