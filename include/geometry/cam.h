@@ -262,15 +262,21 @@ public:
         int i = 0;
         while (i < max_iter)
         {
-            unDistort(pi_d, pihat_u);
-            e = pihat_u - pi_u;
-            enorm = e.norm();
-            if (enorm <= tol || prev_e < enorm)
+            double alpha = 1.0;
+            do
+            {
+                distortJac(pi_d, J);
+                unDistort(pi_d, pihat_u);
+                e = pihat_u - pi_u;
+                enorm = e.norm();
+                pi_d = pi_d - J*(alpha * e);
+                alpha *= 0.75;
+            }
+            while (enorm >= prev_e && alpha > 0.1);
+
+            if (enorm <= tol)
                 break;
             prev_e = enorm;
-
-            distortJac(pi_d, J);
-            pi_d = pi_d - J*e;
             i++;
         }
     }
