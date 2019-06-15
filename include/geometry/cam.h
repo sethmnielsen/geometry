@@ -207,7 +207,7 @@ public:
         return *this;
     }
 
-    void unDistort(const Vec2& pi_d, Vec2& pi_u) const
+    void unDistort(const Vec2& pi_d, Vec2& pi_u, int iter=5) const
     {
         if (distortion_(0) == (T)0)
         {
@@ -228,7 +228,7 @@ public:
 
         // https://docs.opencv.org/2.4/doc/tutorials/calib3d/camera_calibration/camera_calibration.html
         // https://github.com/opencv/opencv/blob/master/modules/calib3d/src/undistort.cpp
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < iter; i++)
         {
             const T xy = x*y;
             const T yy = y*y;
@@ -252,89 +252,72 @@ public:
         if (distortion_(0) == (T)0)
             return;
 
-        Vec2 pihat_d;
+        Vec2 pihat_u;
         Mat2 J;
         Vec2 e;
         T prev_e = (T)1000.0;
         T enorm = (T)0.0;
 
-//        static const int max_iter = 50;
-//        int i = 0;
-//        while (i < max_iter)
-//        {
-//            unDistort(pi_u, pihat_d);
-//            e = pihat_d - pi_d;
-//            enorm = e.norm();
-//            if (enorm <= tol || prev_e < enorm)
-//                break;
-//            prev_e = enorm;
+        static const int max_iter = 50;
+        int i = 0;
+        while (i < max_iter)
+        {
+            unDistort(pi_d, pihat_u);
+            e = pihat_u - pi_u;
+            enorm = e.norm();
+            if (enorm <= tol || prev_e < enorm)
+                break;
+            prev_e = enorm;
 
-//            distortJac(pi_u, J);
-//            pi_u = pi_u - J*e;
-//            i++;
-//        }
+            distortJac(pi_d, J);
+            pi_d = pi_d - J*e;
+            i++;
+        }
+    }
 
+    void distortJac(const Vec2& pi_u, Mat2& J) const
+    {
+        J.setOnes();
         const T k1 = distortion_(0);
         const T k2 = distortion_(1);
         const T p1 = distortion_(2);
         const T p2 = distortion_(3);
         const T k3 = distortion_(4);
 
-        const T x0 = pi_u.x();
-        const T y0 = pi_u.y();
+        const T x = pi_u.x();
+        const T y = pi_u.y();
+        const T xy = x*y;
+        const T xx = x*x;
+        const T yy = y*y;
+        const T r2 = xx+yy;
+        const T r4 = r2*r2;
+        const T r6 = r2*r4;
+        const T r = sqrt(r2);
+        const T g  = (T)1/((T)1 + ((k3*r2 + k2)*r2 + k1)*r2);
+        const T dx = (T)2*p1*xy + p2*(r2 + (T)2*xx);
+        const T dy = p1*(r2 + (T)2*yy) + (T)2*p2*xy;
 
-        T x = x0;
-        T y = y0;
-        for (int i = 0; i < 5; i++)
+        const T drdx = x / r;
+        const T drdy = y / r;
+        const T dgdr_denom = (1+k3*r6+k2*r4+k1*r2);
+        const T dgdr = -2*r*(3*k3*r4+2*k2*r2+k1)/(dgdr_denom*dgdr_denom);
+        const T ddxdx = 2*p1*y + 6*p2*x;
+        const T ddxdy = 2*p1*x + 2*p2*y;
+        const T ddydx = ddxdy; // 2*p1*x + 2*p2*y;
+        const T ddydy = 6*p1*y + 2*p2*x;
+
+        Mat2 J1, J2;
+        J1 << drdx*(x-dx), drdy*(x-dx),
+              drdx*(y-dy), drdy*(y-dy);
+
+        J2 << (1-ddxdx), ddxdy,
+              ddydx, (1-ddydy);
+
+        J = dgdr * J1 + g * J2;
+        if ((J.array() != J.array()).any())
         {
-            const T xy = x*y;
-            const T xx = x*x;
-            const T yy = y*y;
-//            x = g * (x0 - dx);
-//            y = g * (y0 - dy);
-            const T rr = xx+yy;
-            const T g  = (T)1.0/((T)1.0 + ((k3*rr + k2)*rr + k1)*rr);
-            const T dx = (T)2.0*p1*xy + p2*(rr + (T)2.0*xx);
-            const T dy = p1*(rr + (T)2.0*yy) + (T)2.0*p2*xy;
-            x = (x0/g) + dx;
-            y = (y0/g) + dy;
+            int debug = 1;
         }
-        pi_d << x, y;
-    }
-
-    void distortJac(const Vec2& pi_u, Mat2& J) const
-    {
-        J.setOnes();
-//        const T k1 = distortion_(0);
-//        const T k2 = distortion_(1);
-//        const T p1 = distortion_(2);
-//        const T p2 = distortion_(3);
-//        const T k3 = distortion_(4);
-
-//        const T x0 = pi_u.x();
-//        const T y0 = pi_u.y();
-//        const T xy = x*y;
-//        const T xx = x*x;
-//        const T yy = y*y;
-//        const T rr = xx+yy;
-//        const T g  = (T)1.0/((T)1.0 + ((k3*rr + k2)*rr + k1)*rr);
-//        const T dx = (T)2.0*p1*xy + p2*(rr + (T)2.0*xx);
-//        const T dy = p1*(rr + (T)2.0*yy) + (T)2.0*p2*xy;
-
-//        const T drdx = x / r;
-//        const T drdy = y / r;
-//        const T dgdx = k1*(T)2.0*r*drdx + (T)4.0*k2*rr*r*drdx + (T)6.0*k3*r4*r*drdx;
-//        const T dgdy = k1*(T)2.0*r*drdy + (T)4.0*k2*rr*r*drdy + (T)6.0*k3*r4*r*drdy;
-
-//        J << /* dxbar/dx */ ((T)1.0 + ((T)2.0*p1*y + p2*((T)2.0*r*drdx + (T)4.0*x)))*g + dx*dgdx,
-//             /* dxbar/dy */ ((T)2.0*p1*x + p2*(T)2.0*r*drdy)*g + dx*dgdy,
-//             /* dybar/dx */ (p1*(T)2.0*r*drdx+(T)2.0*p2*y)*g + dy*dgdx,
-//             /* dybar/dy */ ((T)1.0 + (p1*((T)2.0*r*drdy + (T)4.0*y) + (T)2.0*p2*x))*g + dy*dgdy;
-
-//        if ((J.array() != J.array()).any())
-//        {
-//            int debug = 1;
-//        }
     }
 
     template <typename T2>

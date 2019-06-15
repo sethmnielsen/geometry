@@ -518,8 +518,8 @@ TEST (Camera, DistortJac)
         pi_d_plus = pi_d + Vector2d::Unit(i)*eps;
         pi_d_minus = pi_d - Vector2d::Unit(i)*eps;
         Vector2d pi_u_plus, pi_u_minus;
-        cam.unDistort(pi_d_plus, pi_u_plus);
-        cam.unDistort(pi_d_minus, pi_u_minus);
+        cam.unDistort(pi_d_plus, pi_u_plus, 1);
+        cam.unDistort(pi_d_minus, pi_u_minus, 1);
 
         J_fd.col(i) = (pi_u_plus - pi_u_minus)/(2.0*eps);
     }
@@ -530,7 +530,7 @@ TEST (Camera, DistortJac)
 
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 2; j++)
-            EXPECT_NEAR(J_A(i,j), J_fd(i,j), 1e-5);
+            EXPECT_NEAR(J_A(i,j), J_fd(i,j), 1e-3);
 
 }
 
