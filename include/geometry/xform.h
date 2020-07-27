@@ -124,9 +124,9 @@ public:
 
   Xform& operator=(const Xform& X)
   {
-      t_ = X.t_;
-      q_ = X.q_;
-      return *this;
+    t_ = X.t_;
+    q_ = X.q_;
+    return *this;
   }
 
   Xform& operator=(const Vec7& v)
@@ -176,6 +176,7 @@ public:
     out.block<3,1>(0,3) = t_;
     out.block<1,3>(3,0) = Eigen::Matrix<T,1,3>::Zero();
     out(3,3) = 1.0;
+    return out;
   }
 
   static Xform Identity()
